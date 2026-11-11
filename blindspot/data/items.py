@@ -77,11 +77,11 @@ _T, _M, _W, _S = GSS_FAMILIES
 _ZERO_TEN = tuple(range(11))
 # (spec, substantive codes in option order). Reserved codes (d/i/n/s/...) load as NaN.
 GSS_ITEMS: tuple[tuple[ItemSpec, tuple[int, ...]], ...] = (
-    (_g("trppl", _T, verified=False), _ZERO_TEN),
-    (_g("trcourts", _T, verified=False), _ZERO_TEN),
-    (_g("trcong", _T, sensitive=True, verified=False), _ZERO_TEN),
-    (_g("intcnfrm", _T, verified=False), (1, 2, 3, 4, 5)),
-    (_g("satdemoc", _T, sensitive=True, verified=False), (1, 2, 3, 4)),
+    (_g("trppl", _T), _ZERO_TEN),
+    (_g("trcourts", _T), _ZERO_TEN),
+    (_g("trcong", _T, sensitive=True), _ZERO_TEN),
+    (_g("intcnfrm", _T), (1, 2, 3, 4, 5)),
+    (_g("satdemoc", _T, sensitive=True), (1, 2, 3, 4)),
     (_g("polint", _T, sensitive=True), (1, 2, 3, 4, 5)),
     (_g("satfin", _M), (1, 2, 3)),
     (_g("finalter", _M), (1, 3, 2)),  # better, stayed same, worse (reordered to be ordinal)
@@ -95,24 +95,35 @@ GSS_ITEMS: tuple[tuple[ItemSpec, tuple[int, ...]], ...] = (
     (_g("socrel", _W), (1, 2, 3, 4, 5, 6, 7)),
     (_g("workless", _W, kind="binary"), (1, 2)),
     (_g("meovrwrk", _W), (1, 2, 3, 4, 5)),
-    (_g("techesy", _S, verified=False), (1, 2, 3, 4, 5)),
-    (_g("harmgood1", _S, verified=False), (1, 2, 3, 4, 5)),
-    (_g("aiworry", _S, verified=False), (1, 2, 3, 4, 5)),
-    (_g("aidrive", _S, verified=False), _ZERO_TEN),
-    (_g("aimed", _S, verified=False), _ZERO_TEN),
+    (_g("techesy", _S), (1, 2, 3, 4, 5)),
+    (_g("harmgood1", _S), (1, 2, 3, 4, 5)),
+    (_g("aiworry", _S), (1, 2, 3, 4, 5)),
+    (_g("aidrive", _S), _ZERO_TEN),
+    (_g("aimed", _S), _ZERO_TEN),
     (_g("natsci", _S), (1, 2, 3)),
 )
 
-# Wording. verified=True items: the question text printed in the GSS 2024 Codebook R3a (bracketed
-# CAPI fills resolved). verified=False items: the codebook prints only a short variable label and no
-# local document (codebook, What's New, Release Variables, Release Notes) gives the question text,
-# so the label is stored as-is and the item is excluded from live mode.
+# Wording, all verified:
+# - core items: question text printed in the GSS 2024 Codebook R3a (bracketed CAPI fills resolved);
+# - the 10 ISSP / label-only items (trppl ... aimed): verbatim from the official GSS 2024 Ballot 1
+#   questionnaire, https://gss.norc.org/content/dam/gss/get-documentation/pdf/quex/GSS2024_Ballot1_English.pdf
+#   (MDD export "GSS2024M_BALLOT1.MDD", dated 12/11/2024). Battery stems are joined to the item text.
+#   satdemoc keeps its response-order fill marker: the questionnaire does not print the fill text.
+GSS_WORDING_SOURCE_URL = "https://gss.norc.org/content/dam/gss/get-documentation/pdf/quex/GSS2024_Ballot1_English.pdf"
 GSS_WORDING = {
-    "trppl": "Trust in others, 10 point scale",
-    "trcourts": "how much trust r has in american courts",
-    "trcong": "Trust in congress, 10 point scale",
-    "intcnfrm": "How often R tries to confirm information with other sources",
-    "satdemoc": "R satisfied with way democracy works in america",
+    "trppl": ("Generally speaking, would you say that most people can be trusted or that you can't be too careful "
+              "in dealing with people? Where would you place yourself on this scale, where 0 means you can't be "
+              "too careful, and 10 means most people can be trusted."),
+    "trcourts": ("On a scale of 0 to 10, how much do you personally trust each of the following institutions? "
+                 "0 means you do not trust an institution at all, and 10 means you trust it completely. "
+                 "America's courts."),
+    "trcong": ("On a scale of 0 to 10, how much do you personally trust each of the following institutions? "
+               "0 means you do not trust an institution at all, and 10 means you trust it completely. "
+               "The U.S. Congress."),
+    "intcnfrm": ("When looking for news or information about political matters online, how often, if at all, do "
+                 "you: Try to confirm information you find by searching online for another source?"),
+    "satdemoc": ("On the whole, are you {response to SATDEMOC_fill} with the way democracy works in the "
+                 "United States?"),
     "polint": "How interested would you say you personally are in politics?",
     "satfin": ("We are interested in how people are getting along financially these days. So far as you and "
                "your family are concerned, would you say that you are pretty well satisfied with your present "
@@ -135,11 +146,25 @@ GSS_WORDING = {
     "workless": ("In your present or most recent job, have you ever done any of the following because of your "
                  "responsibilities to members of your family? Cut back on your work?"),
     "meovrwrk": "Family life often suffers because men concentrate too much on their work.",
-    "techesy": "Does technology make our lives easier?",
-    "harmgood1": "Does technology do more harm than good?",
-    "aiworry": "R worried that AI will take over many jobs done by humans",
-    "aidrive": "R's comfort with driverless car",
-    "aimed": "R's comfort with medical operation by robot",
+    "techesy": ("Here are some statements about technology. Technology includes all kinds of machinery, "
+                "equipment, digital devices, and software. How much do you agree or disagree with each of these "
+                "statements? Technology makes our lives easier."),
+    "harmgood1": ("Here are some statements about technology. Technology includes all kinds of machinery, "
+                  "equipment, digital devices, and software. How much do you agree or disagree with each of "
+                  "these statements? Overall, technology does more harm than good."),
+    "aiworry": ("The next questions deal with robots and artificial intelligence. 'Artificial intelligence' is "
+                "the ability of a robot or computer to perform tasks commonly associated with humans. Overall, how "
+                "worried, if at all, are you that in the next 10 years machines, computer programs, and Artificial "
+                "Intelligence (AI) will take over many of the jobs done by humans?"),
+    "aidrive": ("Various human actions can be done by robots or Artificial Intelligence (AI). For each of the "
+                "following, please indicate, using a scale from 0 to 10, how you would personally feel about it. "
+                "On this scale, '0' means that you would feel \"totally uncomfortable\" and '10' means that you "
+                "would feel \"totally comfortable\" with this situation. Being driven in a driverless car."),
+    "aimed": ("Various human actions can be done by robots or Artificial Intelligence (AI). For each of the "
+              "following, please indicate, using a scale from 0 to 10, how you would personally feel about it. "
+              "On this scale, '0' means that you would feel \"totally uncomfortable\" and '10' means that you "
+              "would feel \"totally comfortable\" with this situation. Having a medical operation performed on "
+              "you by a robot."),
     "natsci": ("Are we spending too much, too little, or about the right amount on supporting scientific "
                "research?"),
 }

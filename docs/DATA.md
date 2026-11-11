@@ -65,7 +65,7 @@ Source: NORC, General Social Survey 2024, Release 3a (`GSS2024.dta`, `GSS 2024 C
 - **Split ballots.** `ballot` ∈ {1: 1,341; 2: 1,294; 3: 1,351} over all rows (main sample: 1,116 / 1,067 / 1,126). Most attitude items are asked on only 1–2 ballots, so only about 105 variables have <10% missing on the full sample, and most of those are demographics or admin. **Proposal: the GSS target set is ballot 1 (n = 1,341).** It is the only ballot that carries the ISSP *Digital Society* module (technology, AI, 0–10 trust scales) at <10% missing, alongside the full-sample money and life items. Not available on ballot 1: the `con*` confidence battery and `trust/fair/helpful` (ballots 2–3).
 - Weights (`wtssps`, `wtssnrps`) exist but are not used for coverage (unweighted people-level analysis).
 - Demographics (descriptive only): `age_band` from `age` (same bands as Twin; 89 = "89 or older"), `gender` from `sex`, `education` from `degree` (5 GSS levels), `income_band` from `income16` (26 codes → <$30k / $30–50k / $50–75k / $75–110k / $110k+; the top cut is 110k because code 22 spans $90–110k), `region` (4 census regions), `race` (white/black/other). Missing → `unknown`.
-- Wording: the question text printed in the codebook, with bracketed CAPI fills resolved (e.g. "[present/most recent]" → "present or most recent"). For 10 items (ISSP Digital Society plus `satdemoc`) the codebook prints only a short variable label, and none of the local documents (Codebook R3a, What's New R3a, Release Variables R3a, Release Notes 7224 R3a) has the question text. Those items keep the label as `wording`, carry `verified=False`, and are excluded from live mode.
+- Wording: core items use the question text printed in the codebook, with bracketed CAPI fills resolved. The 10 ISSP/label-only items (`trppl, trcourts, trcong, intcnfrm, satdemoc, techesy, harmgood1, aiworry, aidrive, aimed`) use the verbatim text from the **official GSS 2024 Ballot 1 questionnaire** (https://gss.norc.org/content/dam/gss/get-documentation/pdf/quex/GSS2024_Ballot1_English.pdf, MDD export dated 12/11/2024), with each battery's stem joined to the item; their response labels match the .dta value labels. `satdemoc` keeps its `{response to SATDEMOC_fill}` marker because the questionnaire does not print the fill text (it is sensitive, so it never appears in live mode). All 24 items: `verified=True` (H2 side task). The GSS Data Explorer was unreachable (TLS certificate error).
 
 
 ## 3. Items (approved 2026-11-11)
@@ -77,7 +77,7 @@ Decisions recorded at approval:
 1. GSS `intrust` (11.1% missing) replaced by `intcnfrm` (8.8% missing on the final target set).
 2. The 10 `est_public_*` items are kept, binned into five 20-point bands, as their own family `perception`, `sensitive=True`.
 3. `trcong`, `satdemoc`, `polint`, `tax` marked `sensitive=True`.
-4. GSS wording verified against local documentation where possible; 10 items `verified=False` (see §2).
+4. GSS wording verified: core items from the codebook, the 10 label-only items from the official 2024 Ballot 1 questionnaire (done in H2; see §2).
 5. GSS target set restricted to the main cross-section, ballot 1 (n = 1,116).
 6. Twin families: `policy_self`, `perception`, `risk_benefit`, `decisions`.
 
@@ -122,11 +122,11 @@ Decisions recorded at approval:
 ### GSS 2024: 24 items, 4 families × 6 (target set n = 1,116)
 | Code | Family | Wording | Scale | Missing | Top | Sensitive | Verified |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| trppl | trust_institutions | "Trust in others, 10 point scale" (label) | 0 can't be too careful → 10 most people can be trusted | 7% | 24% | no | **no** |
-| trcourts | trust_institutions | "how much trust r has in american courts" (label) | 0 no trust → 10 complete trust | 9% | 23% | no | **no** |
-| trcong | trust_institutions | "Trust in congress, 10 point scale" (label) | 0 no trust at all → 10 complete trust | 9% | 22% | yes | **no** |
-| intcnfrm | trust_institutions | "How often R tries to confirm information with other sources" (label) | very often / often / sometimes / rarely / never | 9% | 32% | no | **no** |
-| satdemoc | trust_institutions | "R satisfied with way democracy works in america" (label) | very / fairly / not very / not at all satisfied | 5% | 37% | yes | **no** |
+| trppl | trust_institutions | Generally speaking, would you say that most people can be trusted…? (0–10) | 0 can't be too careful → 10 most people can be trusted | 7% | 24% | no | yes |
+| trcourts | trust_institutions | How much do you personally trust… America's courts (0–10) | 0 no trust → 10 complete trust | 9% | 23% | no | yes |
+| trcong | trust_institutions | How much do you personally trust… The U.S. Congress (0–10) | 0 no trust at all → 10 complete trust | 9% | 22% | yes | yes |
+| intcnfrm | trust_institutions | …political matters online, how often… Try to confirm information you find by searching online for another source? | very often / often / sometimes / rarely / never | 9% | 32% | no | yes |
+| satdemoc | trust_institutions | On the whole, are you {fill} with the way democracy works in the United States? | very / fairly / not very / not at all satisfied | 5% | 37% | yes | yes |
 | polint | trust_institutions | How interested would you say you personally are in politics? | very → not at all interested (5) | 5% | 26% | yes | yes |
 | satfin | money_economy | …would you say that you are pretty well satisfied with your present financial situation, more or less satisfied, or not satisfied at all? | 3 | 0% | 45% | no | yes |
 | finalter | money_economy | During the last few years, has your financial situation been getting better, worse, or has it stayed the same? | better / stayed same / worse | 1% | 38% | no | yes |
@@ -140,14 +140,14 @@ Decisions recorded at approval:
 | socrel | work_life | How often do you spend a social evening with relatives? | almost daily → never (7) | 0% | 21% | no | yes |
 | workless | work_life | In your present or most recent job, have you ever … because of your responsibilities to members of your family? Cut back on your work? | yes / no | 4% | 72% | no | yes |
 | meovrwrk | work_life | Family life often suffers because men concentrate too much on their work. | strongly agree → strongly disagree (5) | 1% | 39% | no | yes |
-| techesy | tech_science | "Does technology make our lives easier?" (label) | strongly agree → strongly disagree (5) | 5% | 51% | no | **no** |
-| harmgood1 | tech_science | "Does technology do more harm than good?" (label) | same | 5% | 35% | no | **no** |
-| aiworry | tech_science | "R worried that AI will take over many jobs done by humans" (label) | very → not at all worried (5) | 8% | 39% | no | **no** |
-| aidrive | tech_science | "R's comfort with driverless car" (label) | 0 totally uncomfortable → 10 totally comfortable | 5% | 45% | no | **no** |
-| aimed | tech_science | "R's comfort with medical operation by robot" (label) | same | 6% | 36% | no | **no** |
+| techesy | tech_science | Agree/disagree: Technology makes our lives easier. | strongly agree → strongly disagree (5) | 5% | 51% | no | yes |
+| harmgood1 | tech_science | Agree/disagree: Overall, technology does more harm than good. | same | 5% | 35% | no | yes |
+| aiworry | tech_science | …how worried… that in the next 10 years machines, computer programs, and AI will take over many of the jobs done by humans? | very → not at all worried (5) | 8% | 39% | no | yes |
+| aidrive | tech_science | Comfort (0–10): Being driven in a driverless car. | 0 totally uncomfortable → 10 totally comfortable | 5% | 45% | no | yes |
+| aimed | tech_science | Comfort (0–10): Having a medical operation performed on you by a robot. | same | 6% | 36% | no | yes |
 | natsci | tech_science | Are we spending too much, too little, or about the right amount on supporting scientific research? | too little / about right / too much | 5% | 45% | no | yes |
 
-- **Live mode (GSS): 12 items.** These are `satfin`, `finalter`, `finrela`, `class`, `econstat`, `happy`, `life`, `socfrend`, `socrel`, `workless`, `meovrwrk`, `natsci`.
+- **Live mode (GSS): 20 items** (all except the sensitive `trcong`, `satdemoc`, `polint`, `tax`).
 - Excluded by rule: sexual behaviour, health/mental-health conditions (including the ballot-1 mental-health vignettes), immigration status, religious identity.
 
 ## 4. Splits

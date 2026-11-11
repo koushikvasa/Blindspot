@@ -7,8 +7,6 @@ from blindspot.data.items import GSS_FAMILIES, GSS_ITEMS, MAX_MISSING, MAX_TOP_S
 
 pytestmark = pytest.mark.skipif(not gss.DTA.exists(), reason="GSS 2024 raw data not present")
 
-UNVERIFIED = {"trppl", "trcourts", "trcong", "intcnfrm", "satdemoc",
-              "techesy", "harmgood1", "aiworry", "aidrive", "aimed"}
 SENSITIVE = {"trcong", "satdemoc", "polint", "tax"}
 
 
@@ -42,9 +40,9 @@ def test_items_follow_selection_rules(r):
 def test_four_themes_of_six_with_flags(r):
     fams = pd.Series([i.family for i in r.items]).value_counts()
     assert set(fams.index) == set(GSS_FAMILIES) and (fams == 6).all()
-    assert {i.code for i in r.items if not i.verified} == UNVERIFIED
+    assert all(i.verified for i in r.items)
     assert {i.code for i in r.items if i.sensitive} == SENSITIVE
-    assert {i.code for i in r.items if i.live_ok} == {i.code for i in r.items} - UNVERIFIED - SENSITIVE
+    assert {i.code for i in r.items if i.live_ok} == {i.code for i in r.items} - SENSITIVE
 
 
 def test_option_labels_from_value_labels(r):
@@ -62,6 +60,7 @@ def test_encode_maps_codes_by_position_and_rejects_unknown():
         gss.encode(pd.Series([4]), spec, (1, 3, 2))
 
 
-def test_every_spec_has_wording():
+def test_every_spec_has_full_question_wording():
     from blindspot.data.items import GSS_WORDING
     assert {s.code for s, _ in GSS_ITEMS} == set(GSS_WORDING)
+    assert all(len(w) > 40 for w in GSS_WORDING.values())

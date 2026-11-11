@@ -12,6 +12,7 @@ An agent that audits synthetic survey respondents against real ones, finds uncov
 6. **No raw data or secrets in git.** `data/raw`, `data/processed`, `.env` are ignored. Never print API keys.
 7. **Cache every LLM call** (`results/cache/`, keyed by prompt hash) so experiments are reproducible and cheap.
 8. **Inspect before assuming.** Dataset schemas are not documented here; read the files and write what you find into `docs/DATA.md` before coding against them.
+9. Persona text from Twin-2K-500 contains wave-4 answers to scored items. It must never enter any generator prompt, for any split. Loaders may read only demographics and option labels from it.
 
 ## Environment
 Windows + Cursor. Use `pathlib`, no shell-specific scripts. Python 3.11+. Run tests with `pytest -q`.

@@ -1,0 +1,13 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+data/raw/
+data/processed/
+results/cache/
+*.parquet
+*.dta
+*.zip
+node_modules/
+.next/
+.DS_Store

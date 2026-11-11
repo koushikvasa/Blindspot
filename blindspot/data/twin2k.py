@@ -128,7 +128,8 @@ def clean_wording(text: str) -> str:
 def build_items(wording: pd.Series, labels: dict[str, list[str]]) -> list[Item]:
     return [
         Item(code=s.code, wording=clean_wording(wording[s.source]), kind=s.kind,
-             options=_options_for(s, labels), theme=s.theme, sensitive=s.sensitive)
+             options=_options_for(s, labels), theme=s.theme, sensitive=s.sensitive,
+             verified=s.verified, family=s.theme)
         for s in TWIN_ITEMS
     ]
 

@@ -12,6 +12,17 @@ class Item:
     options: list[str]   # answer labels in order (ordinal) or as listed
     theme: str           # e.g. "trust", "money", "risk", "personality"
     sensitive: bool = False  # politically charged: allowed in analysis, never in live mode
+    verified: bool = True    # wording checked against source documentation; unverified -> never in live mode
+    family: str = ""         # question family, used to weight families equally in distances; defaults to theme
+
+    def __post_init__(self):
+        if not self.family:
+            self.family = self.theme
+
+    @property
+    def live_ok(self) -> bool:
+        """May this item be shown in live mode?"""
+        return self.verified and not self.sensitive
 
 
 @dataclass

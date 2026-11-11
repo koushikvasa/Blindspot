@@ -1,7 +1,7 @@
 # Data notes (H1)
 
 Everything below was found by reading the files, not assumed. Raw data lives in `data/raw/` (git-ignored).
-Item lists are **PROPOSED, awaiting approval**. Splits and tests are not built yet.
+Item lists **approved 2026-11-11** (decisions recorded in §3). Splits in §4. Run `python -m blindspot.data.inspect` for the live numbers.
 
 ## 1. Twin-2K-500
 
@@ -58,83 +58,103 @@ Columns: `pid` (string; same set as `TWIN_ID`), `persona_text`, `persona_summary
 
 Source: NORC, General Social Survey 2024, Release 3a (`GSS2024.dta`, `GSS 2024 Codebook R3a.pdf`). Cite: Davern, M., Bautista, R., Freese, J., Herd, P., Morgan, S. L. *General Social Survey 2024*. NORC at the University of Chicago. (Author list from memory: check against NORC's citation page before publishing.)
 
-- `GSS2024.dta`: **3,986 rows × 989 columns**, ID `id` (unique). Note: the codebook's frequency tables total 3,309 cases, so the release file holds more rows than the codebook counts. Not investigated further; flagged.
+- `GSS2024.dta`: **3,986 rows × 989 columns**, ID `id` (unique), `year` = 2024 for all rows.
+- **Why 3,986 and not the codebook's 3,309.** `sample` (*Sampling frame and method*) has two values: 13 = "2020 sample frame, full probability" (**3,309 rows**, the main cross-section and the codebook's case base) and 14 = "2024 AmeriSpeak frame, full probability black/hispanic/aanhpi oversample" (**677 rows**, the same as `amerstatus == 1`). The oversample is all web mode and has **no `wtssps`/`wtssnrps` weight** (100% missing); only `wtssnrps_as` covers it. The codebook methodology section describes it as an oversample of Black, Hispanic and AANHPI respondents from NORC's AmeriSpeak panel. `phase` (two-phase subsampling, 1 = initial, 2 = subsampled) applies only to sample 13; `oversamp` is constant. Because the oversample is a different sample with a different frame and no main weight, **the target set is the main cross-section**: `sample == 13`.
+- **Final GSS target set: `sample == 13 & ballot == 1` → n = 1,116.** The `wtssps` weight is kept as `demographics["weight"]` (non-missing for all 1,116) for later use, not for coverage.
 - Loaded with `pyreadstat.read_dta`. 940 columns come back as `object` (ints mixed with NaN), so we use `pd.to_numeric`. Reserved codes are Stata extended missing values (`d` don't know / can't choose, `i` IAP = not asked, `n` no answer, `s` skipped on web, `r` refused, `x`/`y`/`z`, …) and load as **NaN**.
-- **Split ballots.** `ballot` ∈ {1: 1,341; 2: 1,294; 3: 1,351}. Most attitude items are asked on only 1–2 ballots, so only about 105 variables have <10% missing on the full sample, and most of those are demographics or admin. **Proposal: the GSS target set is ballot 1 (n = 1,341).** It is the only ballot that carries the ISSP *Digital Society* module (technology, AI, 0–10 trust scales) at <10% missing, alongside the full-sample money and life items. Not available on ballot 1: the `con*` confidence battery and `trust/fair/helpful` (ballots 2–3).
+- **Split ballots.** `ballot` ∈ {1: 1,341; 2: 1,294; 3: 1,351} over all rows (main sample: 1,116 / 1,067 / 1,126). Most attitude items are asked on only 1–2 ballots, so only about 105 variables have <10% missing on the full sample, and most of those are demographics or admin. **Proposal: the GSS target set is ballot 1 (n = 1,341).** It is the only ballot that carries the ISSP *Digital Society* module (technology, AI, 0–10 trust scales) at <10% missing, alongside the full-sample money and life items. Not available on ballot 1: the `con*` confidence battery and `trust/fair/helpful` (ballots 2–3).
 - Weights (`wtssps`, `wtssnrps`) exist but are not used for coverage (unweighted people-level analysis).
 - Demographics (descriptive only): `age_band` from `age` (same bands as Twin; 89 = "89 or older"), `gender` from `sex`, `education` from `degree` (5 GSS levels), `income_band` from `income16` (26 codes → <$30k / $30–50k / $50–75k / $75–110k / $110k+; the top cut is 110k because code 22 spans $90–110k), `region` (4 census regions), `race` (white/black/other). Missing → `unknown`.
-- Wording: taken from the codebook. For ISSP items (and `satdemoc`) the codebook prints only a short label; those are marked *label-only* below and need checking against the ISSP 2024 questionnaire before anyone sees them.
+- Wording: the question text printed in the codebook, with bracketed CAPI fills resolved (e.g. "[present/most recent]" → "present or most recent"). For 10 items (ISSP Digital Society plus `satdemoc`) the codebook prints only a short variable label, and none of the local documents (Codebook R3a, What's New R3a, Release Variables R3a, Release Notes 7224 R3a) has the question text. Those items keep the label as `wording`, carry `verified=False`, and are excluded from live mode.
 
-## 3. Proposed items (awaiting approval)
+
+## 3. Items (approved 2026-11-11)
 
 Rules: missing < 10% in the target set, no option above 85%, ordinal or binary. "Top" = share of the most common option.
+`Item.family` groups items so distances can weight each family equally. `Item.live_ok` = `verified and not sensitive`.
 
-### Twin-2K-500: 30 items (missing shown as real / retest / twin)
-| Code | Theme | Wording (short) | Scale | Missing | Top real | Top twin | Sensitive |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| support_carbon_tax | policy_views | Support/oppose: tax on carbon emissions | 5: strongly oppose → strongly support | 0/0/0% | 34% | 47% | yes |
-| support_clean_energy_lowincome | policy_views | …40% of clean-energy spending to low-income communities | same | 0% | 33% | 42% | yes |
-| support_carbon_free_2035 | policy_views | …federal investment for carbon-free electricity by 2035 | same | 0% | 34% | 34% | yes |
-| support_medicare_for_all | policy_views | …Medicare for All | same | 0% | 50% | 44% | yes |
-| support_public_option | policy_views | …public option | same | 0% | 38% | 44% | yes |
-| support_citizenship_path | policy_views | …path to citizenship for undocumented immigrants | same | 0% | 40% | 44% | yes |
-| support_paid_family_leave | policy_views | …required paid family leave | same | 0% | 52% | 60% | yes |
-| support_wealth_tax | policy_views | …2% tax on assets above $50M | same | 0% | 53% | 37% | yes |
-| support_more_deportations | policy_views | …increasing deportations | same | 0% | 27% | 43% | yes |
-| support_senior_vouchers | policy_views | …healthcare vouchers for seniors instead of Medicare | same | 0% | 29% | 64% | yes |
-| est_public_carbon_tax | perceived_consensus | What % of the public supports: carbon tax | 0–100 binned into 5: 0-19 / 20-39 / 40-59 / 60-79 / 80-100% | 0% | 37% | 60% | yes |
-| est_public_clean_energy_lowincome | perceived_consensus | …40% to low-income communities | same | 0% | 34% | 51% | yes |
-| est_public_carbon_free_2035 | perceived_consensus | …carbon-free 2035 | same | 0% | 34% | 48% | yes |
-| est_public_medicare_for_all | perceived_consensus | …Medicare for All | same | 0% | 35% | 34% | yes |
-| est_public_public_option | perceived_consensus | …public option | same | 0% | 33% | 42% | yes |
-| est_public_citizenship_path | perceived_consensus | …path to citizenship | same | 0% | 40% | 36% | yes |
-| est_public_paid_family_leave | perceived_consensus | …paid family leave | same | 0% | 35% | 42% | yes |
-| est_public_wealth_tax | perceived_consensus | …wealth tax | same | 0% | 29% | 30% | yes |
-| est_public_more_deportations | perceived_consensus | …more deportations | same | 0% | 36% | 56% | yes |
-| est_public_senior_vouchers | perceived_consensus | …senior vouchers | same | 0% | 35% | 58% | yes |
-| benefit_bicycles | risk_benefit | Rate how beneficial: bicycles | 7: not at all beneficial → extremely beneficial | 0% | 39% | 67% | no |
-| benefit_alcohol | risk_benefit | …alcoholic beverages | same | 0% | 33% | 77% | no |
-| benefit_chemical_plants | risk_benefit | …chemical plants | same | 0% | 21% | 66% | no |
-| benefit_pesticides | risk_benefit | …pesticides | same | 0% | 27% | 69% | no |
-| risk_bicycles | risk_benefit | Rate how risky: bicycles | 7: not at all risky → extremely risky | 0% | 32% | **91%** | no |
-| risk_alcohol | risk_benefit | …alcoholic beverages | same | 0% | 36% | 79% | no |
-| risk_chemical_plants | risk_benefit | …chemical plants | same | 0% | 34% | 84% | no |
-| risk_pesticides | risk_benefit | …pesticides | same | 0% | 33% | 79% | no |
-| omission_vaccine | reasoning | Flu with 10% death risk vs vaccine with 5% risk: take it? | 4: definitely not → definitely take | 0% | 38% | **92%** | no |
-| denominator_tray | reasoning | Draw from small tray (1/10 black) or large tray (8/100)? | 2: small / large tray | 0% | 64% | 84% | no |
+Decisions recorded at approval:
+1. GSS `intrust` (11.1% missing) replaced by `intcnfrm` (8.8% missing on the final target set).
+2. The 10 `est_public_*` items are kept, binned into five 20-point bands, as their own family `perception`, `sensitive=True`.
+3. `trcong`, `satdemoc`, `polint`, `tax` marked `sensitive=True`.
+4. GSS wording verified against local documentation where possible; 10 items `verified=False` (see §2).
+5. GSS target set restricted to the main cross-section, ballot 1 (n = 1,116).
+6. Twin families: `policy_self`, `perception`, `risk_benefit`, `decisions`.
 
-- Not proposed: the Q295 block (not a fixed item, see above) and every `Q156–Q203` reasoning task (≥49% missing, between-subjects). Pooling the two versions of a task into one item would give 0% missing but mix framings, so we don't.
-- Sensitive: all policy items and the public-support estimates (also political). That leaves **10 non-sensitive Twin items for live mode**.
+### Twin-2K-500: 30 items, 4 families (0% missing in real, twin and retest)
+| Code | Family | Wording (short; full text = CSV row 0) | Scale | Top real / twin / retest | Sensitive |
+| --- | --- | --- | --- | --- | --- |
+| support_carbon_tax | policy_self | Support/oppose: tax on carbon emissions | 5: strongly oppose → strongly support | 34 / 47 / 38% | yes |
+| support_clean_energy_lowincome | policy_self | …40% of clean-energy spending to low-income communities | same | 33 / 42 / 36% | yes |
+| support_carbon_free_2035 | policy_self | …federal investment for carbon-free electricity by 2035 | same | 34 / 34 / 34% | yes |
+| support_medicare_for_all | policy_self | …Medicare for All | same | 50 / 44 / 48% | yes |
+| support_public_option | policy_self | …public option | same | 38 / 44 / 39% | yes |
+| support_citizenship_path | policy_self | …path to citizenship for undocumented immigrants | same | 40 / 44 / 39% | yes |
+| support_paid_family_leave | policy_self | …required paid family leave | same | 52 / 60 / 52% | yes |
+| support_wealth_tax | policy_self | …2% tax on assets above $50M | same | 53 / 37 / 54% | yes |
+| support_more_deportations | policy_self | …increasing deportations | same | 27 / 43 / 26% | yes |
+| support_senior_vouchers | policy_self | …healthcare vouchers for seniors instead of Medicare | same | 29 / 64 / 32% | yes |
+| est_public_carbon_tax | perception | What % of the public supports: carbon tax | 0–100 binned: 0-19 / 20-39 / 40-59 / 60-79 / 80-100% | 37 / 60 / 36% | yes |
+| est_public_clean_energy_lowincome | perception | …40% to low-income communities | same | 34 / 51 / 35% | yes |
+| est_public_carbon_free_2035 | perception | …carbon-free 2035 | same | 34 / 48 / 35% | yes |
+| est_public_medicare_for_all | perception | …Medicare for All | same | 35 / 34 / 32% | yes |
+| est_public_public_option | perception | …public option | same | 33 / 42 / 35% | yes |
+| est_public_citizenship_path | perception | …path to citizenship | same | 40 / 36 / 39% | yes |
+| est_public_paid_family_leave | perception | …paid family leave | same | 35 / 42 / 34% | yes |
+| est_public_wealth_tax | perception | …wealth tax | same | 29 / 30 / 31% | yes |
+| est_public_more_deportations | perception | …more deportations | same | 36 / 56 / 37% | yes |
+| est_public_senior_vouchers | perception | …senior vouchers | same | 35 / 58 / 35% | yes |
+| benefit_bicycles | risk_benefit | Rate how beneficial: bicycles | 7: not at all beneficial → extremely beneficial | 39 / 67 / 41% | no |
+| benefit_alcohol | risk_benefit | …alcoholic beverages | same | 33 / 77 / 34% | no |
+| benefit_chemical_plants | risk_benefit | …chemical plants | same | 21 / 66 / 23% | no |
+| benefit_pesticides | risk_benefit | …pesticides | same | 27 / 69 / 28% | no |
+| risk_bicycles | risk_benefit | Rate how risky: bicycles | 7: not at all risky → extremely risky | 32 / **91** / 32% | no |
+| risk_alcohol | risk_benefit | …alcoholic beverages | same | 36 / 79 / 37% | no |
+| risk_chemical_plants | risk_benefit | …chemical plants | same | 34 / 84 / 32% | no |
+| risk_pesticides | risk_benefit | …pesticides | same | 33 / 79 / 34% | no |
+| omission_vaccine | decisions | Flu with 10% death risk vs vaccine with 5% risk: take it? | 4: definitely not → definitely take | 38 / **92** / 39% | no |
+| denominator_tray | decisions | Draw from small tray (1/10 black) or large tray (8/100)? | small / large tray | 64 / 84 / 62% | no |
+
+- All Twin wording is verified (row 0 of the CSVs). Live mode: the 10 non-sensitive items (`risk_benefit` + `decisions`).
+- Not used: the Q295 block (not a fixed item) and every `Q156–Q203` reasoning task (≥49% missing, between-subjects).
 - The rules apply to `real`. The GPT twin breaks the 85% rule on `risk_bicycles` and `omission_vaccine`. That is a finding about the twin, not a reason to drop the items.
 
-### GSS 2024 (ballot 1, n = 1,341): 24 items, 4 themes × 6
-| Code | Theme | Wording (codebook) | Scale | Missing | Top | Sensitive |
-| --- | --- | --- | --- | --- | --- | --- |
-| trppl | trust_institutions | Trust in others, 0–10 *(label-only)* | 0 can't be too careful → 10 most people can be trusted | 7.4% | 25% | no |
-| trcourts | trust_institutions | How much trust in American courts *(label-only)* | 0 no trust → 10 complete trust | 8.8% | 24% | no |
-| trcong | trust_institutions | Trust in Congress *(label-only)* | 0 no trust at all → 10 complete trust | 9.3% | 23% | no |
-| **intrust** ❌ | trust_institutions | How much R trusts people only met online *(label-only)* | 0–10 | **11.1%** (fails <10%) | 31% | no |
-| satdemoc | trust_institutions | Satisfied with the way democracy works in America *(label-only)* | very / fairly / not very / not at all satisfied | 4.2% | 38% | no |
-| polint | trust_institutions | How interested would you say you personally are in politics? | very → not at all interested (5) | 5.6% | 27% | no |
-| satfin | money_economy | …pretty well satisfied with your present financial situation, more or less satisfied, or not satisfied at all? | 3 | 0.4% | 47% | no |
-| finalter | money_economy | During the last few years, has your financial situation been getting better, worse, or stayed the same? | better / stayed same / worse (reordered to be ordinal) | 0.7% | 37% | no |
-| finrela | money_economy | Compared with American families in general, your family income is…? | far below → far above average (5) | 1.0% | 41% | no |
-| class | money_economy | Which social class do you belong in? | lower / working / middle / upper | 1.7% | 45% | no |
-| econstat | money_economy | State of the economy these days in the US? | very good → very bad (5) | 2.2% | 32% | no |
-| tax | money_economy | Federal income tax you pay: too high, about right, too low? | 3 | 2.8% | 67% | no |
-| happy | work_life | Very happy, pretty happy, or not too happy? | 3 | 1.0% | 60% | no |
-| life | work_life | Life exciting, pretty routine, or dull? | 3 | 0.9% | 57% | no |
-| socfrend | work_life | How often a social evening with friends outside the neighborhood? | almost daily → never (7) | 1.0% | 23% | no |
-| socrel | work_life | How often a social evening with relatives? | almost daily → never (7) | 0.9% | 21% | no |
-| workless | work_life | In present/most recent job, ever cut back on work because of family responsibilities? | yes / no | 3.9% | 72% | no |
-| meovrwrk | work_life | Family life often suffers because men concentrate too much on their work. | strongly agree → strongly disagree (5) | 0.7% | 38% | no |
-| techesy | tech_science | Does technology make our lives easier? *(label-only)* | strongly agree → strongly disagree (5) | 5.4% | 50% | no |
-| harmgood1 | tech_science | Does technology do more harm than good? *(label-only)* | same | 5.7% | 37% | no |
-| aiworry | tech_science | Worried that AI will take over many jobs done by humans *(label-only)* | very → not at all worried (5) | 7.8% | 39% | no |
-| aidrive | tech_science | Comfort with a driverless car *(label-only)* | 0 totally uncomfortable → 10 totally comfortable | 5.3% | 42% | no |
-| aimed | tech_science | Comfort with a medical operation by a robot *(label-only)* | same | 6.3% | 35% | no |
-| natsci | tech_science | Spending on supporting scientific research: too much, too little, about right? | too little / about right / too much | 4.5% | 45% | no |
+### GSS 2024: 24 items, 4 families × 6 (target set n = 1,116)
+| Code | Family | Wording | Scale | Missing | Top | Sensitive | Verified |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| trppl | trust_institutions | "Trust in others, 10 point scale" (label) | 0 can't be too careful → 10 most people can be trusted | 7% | 24% | no | **no** |
+| trcourts | trust_institutions | "how much trust r has in american courts" (label) | 0 no trust → 10 complete trust | 9% | 23% | no | **no** |
+| trcong | trust_institutions | "Trust in congress, 10 point scale" (label) | 0 no trust at all → 10 complete trust | 9% | 22% | yes | **no** |
+| intcnfrm | trust_institutions | "How often R tries to confirm information with other sources" (label) | very often / often / sometimes / rarely / never | 9% | 32% | no | **no** |
+| satdemoc | trust_institutions | "R satisfied with way democracy works in america" (label) | very / fairly / not very / not at all satisfied | 5% | 37% | yes | **no** |
+| polint | trust_institutions | How interested would you say you personally are in politics? | very → not at all interested (5) | 5% | 26% | yes | yes |
+| satfin | money_economy | …would you say that you are pretty well satisfied with your present financial situation, more or less satisfied, or not satisfied at all? | 3 | 0% | 45% | no | yes |
+| finalter | money_economy | During the last few years, has your financial situation been getting better, worse, or has it stayed the same? | better / stayed same / worse | 1% | 38% | no | yes |
+| finrela | money_economy | Compared with American families in general, would you say your family income is far below … far above average? | 5 | 1% | 40% | no | yes |
+| class | money_economy | …which would you say you belong in: the lower class, the working class, the middle class, or the upper class? | 4 | 2% | 45% | no | yes |
+| econstat | money_economy | What do you think about the state of the economy these days in the United States? | very good → very bad (5) | 2% | 33% | no | yes |
+| tax | money_economy | Do you consider the amount of federal income tax which you have to pay as too high, about right, or too low? | 3 | 3% | 67% | yes | yes |
+| happy | work_life | …would you say that you are very happy, pretty happy, or not too happy? | 3 | 1% | 60% | no | yes |
+| life | work_life | In general, do you find life exciting, pretty routine, or dull? | 3 | 1% | 54% | no | yes |
+| socfrend | work_life | …how often: Spend a social evening with friends who live outside the neighborhood? | almost daily → never (7) | 1% | 23% | no | yes |
+| socrel | work_life | How often do you spend a social evening with relatives? | almost daily → never (7) | 0% | 21% | no | yes |
+| workless | work_life | In your present or most recent job, have you ever … because of your responsibilities to members of your family? Cut back on your work? | yes / no | 4% | 72% | no | yes |
+| meovrwrk | work_life | Family life often suffers because men concentrate too much on their work. | strongly agree → strongly disagree (5) | 1% | 39% | no | yes |
+| techesy | tech_science | "Does technology make our lives easier?" (label) | strongly agree → strongly disagree (5) | 5% | 51% | no | **no** |
+| harmgood1 | tech_science | "Does technology do more harm than good?" (label) | same | 5% | 35% | no | **no** |
+| aiworry | tech_science | "R worried that AI will take over many jobs done by humans" (label) | very → not at all worried (5) | 8% | 39% | no | **no** |
+| aidrive | tech_science | "R's comfort with driverless car" (label) | 0 totally uncomfortable → 10 totally comfortable | 5% | 45% | no | **no** |
+| aimed | tech_science | "R's comfort with medical operation by robot" (label) | same | 6% | 36% | no | **no** |
+| natsci | tech_science | Are we spending too much, too little, or about the right amount on supporting scientific research? | too little / about right / too much | 5% | 45% | no | yes |
 
-- `intrust` fails the missingness rule. Ballot-1 replacements that pass: `intcnfrm` (how often R confirms online information with other sources; 8.6% missing, top 33%), `inttrig` (reads political opinions they disagree with online; 8.8%, 40%), `infoprofit` (would give personal info companies could profit from; 6.8%, 38%). Or use 5 trust items + 7 tech.
-- Excluded by rule: sexual behaviour, health/mental-health conditions (the ballot-1 mental-health vignettes), immigration status, religious identity.
-- Possibly sensitive (not flagged yet): `trcong`, `satdemoc`, `polint`, `tax`. They touch politics but are not partisan policy positions.
+- **Live mode (GSS): 12 items.** These are `satfin`, `finalter`, `finrela`, `class`, `econstat`, `happy`, `life`, `socfrend`, `socrel`, `workless`, `meovrwrk`, `natsci`.
+- Excluded by rule: sexual behaviour, health/mental-health conditions (including the ballot-1 mental-health vignettes), immigration status, religious identity.
+
+## 4. Splits
+
+`blindspot/eval/splits.py`: `make_splits(ids, seed=42, fractions=(0.5, 0.3, 0.2))` sorts the ids, permutes them with `numpy.random.default_rng(seed)`, and takes floor(n·0.5) for pool, floor(n·0.3) for test, and the rest for holdout. Saved once to `data/processed/splits_{dataset}.json` (`dataset, seed, fractions, n, ids_fingerprint, pool, test, holdout`); `get_or_make_splits` refuses to reuse a saved split if the id set changed. `assert_no_leak(ids_used, splits, allowed=("pool",))` raises `LeakError` for any id outside the allowed splits. This differs from the handover signature: it takes `splits` explicitly.
+
+| Dataset | n | pool | test | holdout |
+| --- | --- | --- | --- | --- |
+| twin2k (one split shared by real, gpt41mini_twin, retest) | 2,058 | 1,029 | 617 | 412 |
+| gss (sample 13, ballot 1) | 1,116 | 558 | 334 | 224 |

@@ -11,6 +11,7 @@ class Item:
     kind: str            # "ordinal" | "nominal" | "binary"
     options: list[str]   # answer labels in order (ordinal) or as listed
     theme: str           # e.g. "trust", "money", "risk", "personality"
+    sensitive: bool = False  # politically charged: allowed in analysis, never in live mode
 
 
 @dataclass

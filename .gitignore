@@ -11,3 +11,4 @@ results/cache/
 node_modules/
 .next/
 .DS_Store
+results/maps/

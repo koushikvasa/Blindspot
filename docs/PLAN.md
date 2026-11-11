@@ -26,7 +26,7 @@ agent loop:  cluster uncovered → describe as answer patterns (Claude)
 | --- | --- | --- |
 | `blindspot/data` | Load Twin-2K-500 and GSS into one `Respondents` format; pick 20–30 items in themes | H1 |
 | `blindspot/eval/splits.py` | Seeded pool/test/holdout split, saved to disk | H1 |
-| `blindspot/space` | Item encoding, Gower distance, nearest neighbours, UMAP map coords | H2 |
+| `blindspot/space` | Item encoding, Gower distance, nearest neighbours, UMAP map coords (see `docs/METRICS.md`) | H2 |
 | `blindspot/coverage` | Uncovered detection, coverage score, precision/coverage metrics, human-human scale | H2 |
 | `blindspot/generators/baselines.py` | Independent marginals, Gaussian copula, add-N-real | H2 |
 | `blindspot/generators/claude_personas.py` | Persona-recipe generator via Claude (cached, batched) | H3 |

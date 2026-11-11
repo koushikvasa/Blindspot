@@ -42,3 +42,9 @@ class Respondents:
     def __post_init__(self):
         assert list(self.answers.columns) == [i.code for i in self.items], "answers columns must match items order"
         assert self.answers.index.equals(self.demographics.index), "answers and demographics must share ids"
+
+    def subset(self, ids) -> "Respondents":
+        """New Respondents restricted to `ids` (in that order); raises KeyError for unknown ids."""
+        ids = pd.Index([str(i) for i in ids])
+        return Respondents(self.answers.loc[ids], self.demographics.loc[ids], self.items, self.source,
+                           dict(self.meta))

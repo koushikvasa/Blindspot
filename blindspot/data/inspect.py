@@ -5,9 +5,9 @@ item, per-family answer spread, and for Twin the per-item agreement of gpt41mini
 with real. Also creates (once) and reports the saved pool/test/holdout splits.
 No coverage metrics here (that is H2).
 """
-import numpy as np
 import pandas as pd
 
+from blindspot.coverage.spread import norm_entropy, top_share
 from blindspot.eval.splits import SPLIT_NAMES, get_or_make_splits
 
 from . import gss, twin2k
@@ -15,19 +15,6 @@ from .schema import Respondents
 
 pd.set_option("display.width", 200)
 pd.set_option("display.max_rows", 200)
-
-
-def top_share(s: pd.Series) -> float:
-    vc = s.dropna().value_counts(normalize=True)
-    return float(vc.max()) if len(vc) else float("nan")
-
-
-def norm_entropy(s: pd.Series, k: int) -> float:
-    """Shannon entropy of the answer distribution divided by log(k): 0 = everyone agrees, 1 = uniform."""
-    p = s.dropna().value_counts(normalize=True).to_numpy()
-    if k < 2 or not len(p):
-        return float("nan")
-    return float(-(p * np.log(p)).sum() / np.log(k))
 
 
 def item_table(r: Respondents) -> pd.DataFrame:

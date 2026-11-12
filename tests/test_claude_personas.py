@@ -5,6 +5,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from fake_claude import FakeClient
+
 from blindspot.data.schema import Item, Respondents
 from blindspot.eval.experiment0 import DatasetInput
 from blindspot.eval.experiment0 import run as run_experiment0
@@ -39,41 +41,6 @@ def _good_json(items=ITEMS, skip: frozenset = frozenset()) -> str:
         k = len(it.options)
         out.append({"q": n, "p": [100 // k] * (k - 1) + [100 - (100 // k) * (k - 1)], "a": k - 1})
     return json.dumps({"answers": out})
-
-
-class FakeClient:
-    """Stands in for anthropic.Anthropic; records every paid call."""
-
-    def __init__(self, responder=lambda params, n: _good_json(), input_tokens: int = 500):
-        self.responder, self.calls, self.input_tokens = responder, [], input_tokens
-        self.messages = SimpleNamespace(create=self._create, count_tokens=self._count, batches=self._batches())
-
-    def with_options(self, **_):
-        return self
-
-    def _message(self, params):
-        self.calls.append(params)
-        text = self.responder(params, len(self.calls))
-        usage = SimpleNamespace(input_tokens=100, output_tokens=50, cache_creation_input_tokens=0,
-                                cache_read_input_tokens=0)
-        return SimpleNamespace(content=[SimpleNamespace(type="text", text=text)], stop_reason="end_turn",
-                               model=params["model"], usage=usage)
-
-    def _create(self, **params):
-        return self._message(params)
-
-    def _count(self, **_):
-        return SimpleNamespace(input_tokens=self.input_tokens)
-
-    def _batches(self):
-        store = {}
-
-        def create(requests):
-            store["results"] = [SimpleNamespace(custom_id=r["custom_id"], result=SimpleNamespace(
-                type="succeeded", message=self._message(dict(r["params"])))) for r in requests]
-            return SimpleNamespace(id="batch_1", processing_status="ended")
-
-        return SimpleNamespace(create=create, retrieve=lambda _id: None, results=lambda _id: store["results"])
 
 
 @pytest.fixture

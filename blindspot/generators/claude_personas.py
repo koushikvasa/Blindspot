@@ -205,26 +205,34 @@ class Plan:
     demographics: pd.DataFrame
     personas: list[str]
     specs: list[CallSpec]
+    recipes: list[str] | None = None   # per-person recipes (H4); None = `recipe` for everyone
 
     def retry_spec(self, i: int) -> CallSpec:
         base = self.specs[i]
         return CallSpec(cache_key(base=base.key, attempt=1), base.params)
 
 
-def plan(dataset: str, demographics: pd.DataFrame, items: list[Item], model: str, recipe: str = "") -> Plan:
-    system = build_system(items, recipe)
+def plan(dataset: str, demographics: pd.DataFrame, items: list[Item], model: str, recipe: str = "",
+         recipes: list[str] | None = None) -> Plan:
+    """One call spec per target person. `recipes` (H4) gives each person their own recipe text;
+    otherwise everyone gets `recipe`. Identical (persona, recipe) pairs get independent replicates."""
+    if recipes is not None and len(recipes) != len(demographics):
+        raise ValueError(f"need {len(demographics)} recipes, got {len(recipes)}")
+    per_person = recipes if recipes is not None else [recipe] * len(demographics)
     schema = response_schema(items)
+    systems = {r: build_system(items, r) for r in set(per_person)}
     personas = [persona_text(row) for _, row in demographics.iterrows()]
-    seen: dict[str, int] = {}
+    seen: dict[tuple[str, str], int] = {}
     specs = []
-    for persona in personas:
-        replicate = seen.get(persona, 0)          # identical personas still get independent calls
-        seen[persona] = replicate + 1
+    for persona, rec in zip(personas, per_person):
+        replicate = seen.get((persona, rec), 0)
+        seen[(persona, rec)] = replicate + 1
         user = build_user(persona)
+        system = systems[rec]
         key = cache_key(model=model, system=system, user=user, items=[i.code for i in items],
-                        recipe=recipe_version(recipe), prompt=PROMPT_VERSION, replicate=replicate, attempt=0)
+                        recipe=recipe_version(rec), prompt=PROMPT_VERSION, replicate=replicate, attempt=0)
         specs.append(CallSpec(key, request_params(model, system, user, schema)))
-    return Plan(dataset, model, items, recipe, demographics, personas, specs)
+    return Plan(dataset, model, items, recipe, demographics, personas, specs, recipes)
 
 
 def _output_tokens_estimate(items: list[Item]) -> int:

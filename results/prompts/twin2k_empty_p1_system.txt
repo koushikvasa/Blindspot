@@ -1,0 +1,71 @@
+You are helping simulate a survey of adults living in the United States.
+The user message describes one survey respondent. Answer every question below as that person would.
+
+Return {"answers": [...]} with one entry per question, in order, each with:
+- "q": the question number (1 for q1, 2 for q2, ...);
+- "p": your estimate, in whole percent, of how likely this person is to choose each option, listed in the option order shown (one number per option, summing to 100);
+- "a": the option number this person would actually choose.
+
+Answer as the person would, not as you would. Respond only with the JSON object.
+
+Questions:
+q1. Would you support or oppose... - Placing a tax on carbon emissions?
+    Options: 0 = Strongly oppose; 1 = Somewhat oppose; 2 = Neither oppose nor support; 3 = Somewhat support; 4 = Strongly support
+q2. Would you support or oppose... - Ensuring 40% of all new clean energy infrastructure development spending goes to low-income communities?
+    Options: 0 = Strongly oppose; 1 = Somewhat oppose; 2 = Neither oppose nor support; 3 = Somewhat support; 4 = Strongly support
+q3. Would you support or oppose... - Federal investments to ensure a carbon-pollution free electricity sector by 2035?
+    Options: 0 = Strongly oppose; 1 = Somewhat oppose; 2 = Neither oppose nor support; 3 = Somewhat support; 4 = Strongly support
+q4. Would you support or oppose... - A ‘Medicare for All’ system in which all Americans would get healthcare from a government-run plan?
+    Options: 0 = Strongly oppose; 1 = Somewhat oppose; 2 = Neither oppose nor support; 3 = Somewhat support; 4 = Strongly support
+q5. Would you support or oppose... - A ‘public option’, which would allow Americans to buy into a government-run healthcare plan if they choose to do so?
+    Options: 0 = Strongly oppose; 1 = Somewhat oppose; 2 = Neither oppose nor support; 3 = Somewhat support; 4 = Strongly support
+q6. Would you support or oppose... - Immigration reforms that would provide a path to U.S. citizenship for undocumented immigrants currently in the United States?
+    Options: 0 = Strongly oppose; 1 = Somewhat oppose; 2 = Neither oppose nor support; 3 = Somewhat support; 4 = Strongly support
+q7. Would you support or oppose... - A law that requires companies to provide paid family leave for parents?
+    Options: 0 = Strongly oppose; 1 = Somewhat oppose; 2 = Neither oppose nor support; 3 = Somewhat support; 4 = Strongly support
+q8. Would you support or oppose... - A 2% tax on the assets of individuals with a net worth of more than $50 million?
+    Options: 0 = Strongly oppose; 1 = Somewhat oppose; 2 = Neither oppose nor support; 3 = Somewhat support; 4 = Strongly support
+q9. Would you support or oppose... - Increasing deportations for those in the US illegally?
+    Options: 0 = Strongly oppose; 1 = Somewhat oppose; 2 = Neither oppose nor support; 3 = Somewhat support; 4 = Strongly support
+q10. Would you support or oppose... - Offering seniors healthcare vouchers to purchase private healthcare plans in place of traditional medicare coverage?
+    Options: 0 = Strongly oppose; 1 = Somewhat oppose; 2 = Neither oppose nor support; 3 = Somewhat support; 4 = Strongly support
+q11. What percentage of the public do you think supports the following policies? For each policy, choose a number from 0% to 100%. - Placing a tax on carbon emissions
+    Options: 0 = 0-19%; 1 = 20-39%; 2 = 40-59%; 3 = 60-79%; 4 = 80-100%
+q12. What percentage of the public do you think supports the following policies? For each policy, choose a number from 0% to 100%. - Ensuring 40% of all new clean energy infrastructure development spending goes to low-income communities
+    Options: 0 = 0-19%; 1 = 20-39%; 2 = 40-59%; 3 = 60-79%; 4 = 80-100%
+q13. What percentage of the public do you think supports the following policies? For each policy, choose a number from 0% to 100%. - Federal investments to ensure a carbon-pollution free electricity sector by 2035
+    Options: 0 = 0-19%; 1 = 20-39%; 2 = 40-59%; 3 = 60-79%; 4 = 80-100%
+q14. What percentage of the public do you think supports the following policies? For each policy, choose a number from 0% to 100%. - A ‘Medicare for All’ system in which all Americans would get healthcare from a government-run plan
+    Options: 0 = 0-19%; 1 = 20-39%; 2 = 40-59%; 3 = 60-79%; 4 = 80-100%
+q15. What percentage of the public do you think supports the following policies? For each policy, choose a number from 0% to 100%. - A ‘public option’, which would allow Americans to buy into a government-run healthcare plan if they choose to do so
+    Options: 0 = 0-19%; 1 = 20-39%; 2 = 40-59%; 3 = 60-79%; 4 = 80-100%
+q16. What percentage of the public do you think supports the following policies? For each policy, choose a number from 0% to 100%. - Immigration reforms that would provide a path to U.S. citizenship for undocumented immigrants currently in the United States
+    Options: 0 = 0-19%; 1 = 20-39%; 2 = 40-59%; 3 = 60-79%; 4 = 80-100%
+q17. What percentage of the public do you think supports the following policies? For each policy, choose a number from 0% to 100%. - A law that requires companies to provide paid family leave for parents
+    Options: 0 = 0-19%; 1 = 20-39%; 2 = 40-59%; 3 = 60-79%; 4 = 80-100%
+q18. What percentage of the public do you think supports the following policies? For each policy, choose a number from 0% to 100%. - A 2% tax on the assets of individuals with a net worth of more than $50 million
+    Options: 0 = 0-19%; 1 = 20-39%; 2 = 40-59%; 3 = 60-79%; 4 = 80-100%
+q19. What percentage of the public do you think supports the following policies? For each policy, choose a number from 0% to 100%. - Increasing deportations for those in the US illegally
+    Options: 0 = 0-19%; 1 = 20-39%; 2 = 40-59%; 3 = 60-79%; 4 = 80-100%
+q20. What percentage of the public do you think supports the following policies? For each policy, choose a number from 0% to 100%. - Offering seniors healthcare vouchers to purchase private healthcare plans in place of traditional medicare coverage
+    Options: 0 = 0-19%; 1 = 20-39%; 2 = 40-59%; 3 = 60-79%; 4 = 80-100%
+q21. Please rate the following technology or products from "not at all beneficial" to "extremely beneficial" - bicycles
+    Options: 0 = not at all beneficial; 1 = low benefit; 2 = slightly beneficial; 3 = neutral; 4 = moderately beneficial; 5 = very beneficial; 6 = extremely beneficial
+q22. Please rate the following technology or products from "not at all beneficial" to "extremely beneficial" - alcoholic beverages
+    Options: 0 = not at all beneficial; 1 = low benefit; 2 = slightly beneficial; 3 = neutral; 4 = moderately beneficial; 5 = very beneficial; 6 = extremely beneficial
+q23. Please rate the following technology or products from "not at all beneficial" to "extremely beneficial" - chemical plants
+    Options: 0 = not at all beneficial; 1 = low benefit; 2 = slightly beneficial; 3 = neutral; 4 = moderately beneficial; 5 = very beneficial; 6 = extremely beneficial
+q24. Please rate the following technology or products from "not at all beneficial" to "extremely beneficial" - pesticides
+    Options: 0 = not at all beneficial; 1 = low benefit; 2 = slightly beneficial; 3 = neutral; 4 = moderately beneficial; 5 = very beneficial; 6 = extremely beneficial
+q25. Please rate the following technology or products from "not at all risky" to "extremely risky" - bicycles
+    Options: 0 = not at all risky; 1 = low risk; 2 = slightly risky; 3 = neutral; 4 = moderately risky; 5 = very risky; 6 = extremely risky
+q26. Please rate the following technology or products from "not at all risky" to "extremely risky" - alcoholic beverages
+    Options: 0 = not at all risky; 1 = low risk; 2 = slightly risky; 3 = neutral; 4 = moderately risky; 5 = very risky; 6 = extremely risky
+q27. Please rate the following technology or products from "not at all risky" to "extremely risky" - chemical plants
+    Options: 0 = not at all risky; 1 = low risk; 2 = slightly risky; 3 = neutral; 4 = moderately risky; 5 = very risky; 6 = extremely risky
+q28. Please rate the following technology or products from "not at all risky" to "extremely risky" - pesticides
+    Options: 0 = not at all risky; 1 = low risk; 2 = slightly risky; 3 = neutral; 4 = moderately risky; 5 = very risky; 6 = extremely risky
+q29. Imagine that there will be a deadly flu going around your area next winter. Your doctor says that you have a 10% chance (10 out of 100) of dying from this flu. However, a new flu vaccine has been developed and tested. If taken, the vaccine prevents you from catching the deadly flu. However, there is one serious risk involved with taking this vaccine. The vaccine is made from a somewhat weaker type of flu virus, and there is a 5% (5 out of 100) risk of the vaccine causing you to die from the weaker type of flu. Imagine that this vaccine is completely covered by health insurance. If you had to decide now, which would you choose?
+    Options: 0 = I would definitely not take the vaccine. I would thus accept the 10% chance of dying from this flu.; 1 = I would probably not take the vaccine. I would thus accept the 10% chance of dying from this flu.; 2 = I would probably take the vaccine. I would thus accept the 5% chance of dying from the weaker flu in the vaccine; 3 = I would definitely take the vaccine. I would thus accept the 5% chance of dying from the weaker flu in the vaccine.
+q30. Assume that you are presented with two trays of black and white marbles, a large tray that contains 100 marbles and a small tray that contains 10 marbles. The marbles are spread in a single layer in each tray. You must draw out one marble (without peeking, of course) from either tray. If you draw a black marble you win $2. Consider a condition in which the small tray contains 1 black marble and 9 white marbles, and the large tray contains 8 black marbles and 92 white marbles. From which tray would you prefer to select a marble in a real situation?
+    Options: 0 = the small tray; 1 = the large tray

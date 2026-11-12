@@ -1,0 +1,59 @@
+You are helping simulate a survey of adults living in the United States.
+The user message describes one survey respondent. Answer every question below as that person would.
+
+Return {"answers": [...]} with one entry per question, in order, each with:
+- "q": the question number (1 for q1, 2 for q2, ...);
+- "p": your estimate, in whole percent, of how likely this person is to choose each option, listed in the option order shown (one number per option, summing to 100);
+- "a": the option number this person would actually choose.
+
+Answer as the person would, not as you would. Respond only with the JSON object.
+
+Questions:
+q1. Generally speaking, would you say that most people can be trusted or that you can't be too careful in dealing with people? Where would you place yourself on this scale, where 0 means you can't be too careful, and 10 means most people can be trusted.
+    Options: 0 = 0 - you can't be too careful; 1 = 1; 2 = 2; 3 = 3; 4 = 4; 5 = 5; 6 = 6; 7 = 7; 8 = 8; 9 = 9; 10 = 10 - most people can be trusted
+q2. On a scale of 0 to 10, how much do you personally trust each of the following institutions? 0 means you do not trust an institution at all, and 10 means you trust it completely. America's courts.
+    Options: 0 = 0 - no trust; 1 = 1; 2 = 2; 3 = 3; 4 = 4; 5 = 5; 6 = 6; 7 = 7; 8 = 8; 9 = 9; 10 = 10 - complete trust
+q3. On a scale of 0 to 10, how much do you personally trust each of the following institutions? 0 means you do not trust an institution at all, and 10 means you trust it completely. The U.S. Congress.
+    Options: 0 = 0 - no trust at all; 1 = 1; 2 = 2; 3 = 3; 4 = 4; 5 = 5; 6 = 6; 7 = 7; 8 = 8; 9 = 9; 10 = 10 - complete trust
+q4. When looking for news or information about political matters online, how often, if at all, do you: Try to confirm information you find by searching online for another source?
+    Options: 0 = very often; 1 = often; 2 = sometimes; 3 = rarely; 4 = never
+q5. On the whole, are you {response to SATDEMOC_fill} with the way democracy works in the United States?
+    Options: 0 = very satisfied; 1 = fairly satisfied; 2 = not very satisfied; 3 = not at all satisfied
+q6. How interested would you say you personally are in politics?
+    Options: 0 = very interested; 1 = fairly interested; 2 = somewhat interested; 3 = not very interested; 4 = not at all interested
+q7. We are interested in how people are getting along financially these days. So far as you and your family are concerned, would you say that you are pretty well satisfied with your present financial situation, more or less satisfied, or not satisfied at all?
+    Options: 0 = pretty well satisfied; 1 = more or less satisfied; 2 = not satisfied at all
+q8. During the last few years, has your financial situation been getting better, worse, or has it stayed the same?
+    Options: 0 = better; 1 = stayed same; 2 = worse
+q9. Compared with American families in general, would you say your family income is far below average, below average, average, above average, or far above average?
+    Options: 0 = far below average; 1 = below average; 2 = average; 3 = above average; 4 = far above average
+q10. If you were asked to use one of four names for your social class, which would you say you belong in: the lower class, the working class, the middle class, or the upper class?
+    Options: 0 = lower class; 1 = working class; 2 = middle class; 3 = upper class
+q11. What do you think about the state of the economy these days in the United States?
+    Options: 0 = very good; 1 = good; 2 = neither bad nor good; 3 = bad; 4 = very bad
+q12. Do you consider the amount of federal income tax which you have to pay as too high, about right, or too low?
+    Options: 0 = too high; 1 = about right; 2 = too low
+q13. Taken all together, how would you say things are these days--would you say that you are very happy, pretty happy, or not too happy?
+    Options: 0 = very happy; 1 = pretty happy; 2 = not too happy
+q14. In general, do you find life exciting, pretty routine, or dull?
+    Options: 0 = exciting; 1 = routine; 2 = dull
+q15. Please select the answer that comes closest to how often you do the following: Spend a social evening with friends who live outside the neighborhood?
+    Options: 0 = almost daily; 1 = once or twice a week; 2 = several times a month; 3 = about once a month; 4 = several times a year; 5 = about once a year; 6 = never
+q16. How often do you spend a social evening with relatives?
+    Options: 0 = almost daily; 1 = once or twice a week; 2 = several times a month; 3 = about once a month; 4 = several times a year; 5 = about once a year; 6 = never
+q17. In your present or most recent job, have you ever done any of the following because of your responsibilities to members of your family? Cut back on your work?
+    Options: 0 = yes; 1 = no
+q18. Family life often suffers because men concentrate too much on their work.
+    Options: 0 = strongly agree; 1 = agree; 2 = neither agree nor disagree; 3 = disagree; 4 = strongly disagree
+q19. Here are some statements about technology. Technology includes all kinds of machinery, equipment, digital devices, and software. How much do you agree or disagree with each of these statements? Technology makes our lives easier.
+    Options: 0 = strongly agree; 1 = agree; 2 = neither agree nor disagree; 3 = disagree; 4 = strongly disagree
+q20. Here are some statements about technology. Technology includes all kinds of machinery, equipment, digital devices, and software. How much do you agree or disagree with each of these statements? Overall, technology does more harm than good.
+    Options: 0 = strongly agree; 1 = agree; 2 = neither agree nor disagree; 3 = disagree; 4 = strongly disagree
+q21. The next questions deal with robots and artificial intelligence. 'Artificial intelligence' is the ability of a robot or computer to perform tasks commonly associated with humans. Overall, how worried, if at all, are you that in the next 10 years machines, computer programs, and Artificial Intelligence (AI) will take over many of the jobs done by humans?
+    Options: 0 = very worried; 1 = somewhat worried; 2 = neither worried nor unworried; 3 = not very worried; 4 = not at all worried
+q22. Various human actions can be done by robots or Artificial Intelligence (AI). For each of the following, please indicate, using a scale from 0 to 10, how you would personally feel about it. On this scale, '0' means that you would feel "totally uncomfortable" and '10' means that you would feel "totally comfortable" with this situation. Being driven in a driverless car.
+    Options: 0 = 0 - totally uncomfortable with this situation; 1 = 1; 2 = 2; 3 = 3; 4 = 4; 5 = 5; 6 = 6; 7 = 7; 8 = 8; 9 = 9; 10 = 10 - totally comfortable with this situation
+q23. Various human actions can be done by robots or Artificial Intelligence (AI). For each of the following, please indicate, using a scale from 0 to 10, how you would personally feel about it. On this scale, '0' means that you would feel "totally uncomfortable" and '10' means that you would feel "totally comfortable" with this situation. Having a medical operation performed on you by a robot.
+    Options: 0 = 0 - totally uncomfortable with this situation; 1 = 1; 2 = 2; 3 = 3; 4 = 4; 5 = 5; 6 = 6; 7 = 7; 8 = 8; 9 = 9; 10 = 10 - totally comfortable with this situation
+q24. Are we spending too much, too little, or about the right amount on supporting scientific research?
+    Options: 0 = too little; 1 = about right; 2 = too much

@@ -62,6 +62,23 @@ def guard(plans: dict[str, cp.Plan], client, cache: ResponseCache, limit: float,
     return {"per_dataset": per, "total": total, "limit_usd": limit}
 
 
+def cost_of_all_responses(plans: dict[str, cp.Plan], cache: ResponseCache, batch: bool) -> dict:
+    """Billed cost of every cached response this run uses (first attempts + retries), including calls
+    paid in earlier, interrupted runs. Priced as batch calls when `batch` is set."""
+    from blindspot.generators.claude_client import token_cost
+
+    total = Usage(batch=batch)
+    for p in plans.values():
+        keys = [s.key for s in p.specs] + [p.retry_spec(i).key for i in range(len(p.specs))]
+        for key in keys:
+            rec = cache.get(key)
+            if rec is not None:
+                total.add(rec["usage"], p.model, batch)
+    out = total.to_dict()
+    out.pop("errors", None)
+    return out
+
+
 def _public(m: dict) -> dict:
     return {k: v for k, v in m.items() if not k.startswith("_")}
 
@@ -142,7 +159,8 @@ def run(inputs: list[DatasetInput], client, out_dir: Path = RESULTS, cache: Resp
                      "prompt_version": cp.PROMPT_VERSION, "recipe": "", "batch": batch,
                      "thinking": "off (model-specific: see claude_personas.thinking_off)", "sampling": "API default temperature (1.0)",
                      "h2_rows_from": Path(h2_path).name},
-        "cost": {"estimate": estimate, "actual": usage.to_dict()},
+        "cost": {"estimate": estimate, "actual": usage.to_dict(),
+                 "all_responses_used": cost_of_all_responses(plans, cache, batch)},
         "datasets": datasets,
         "robustness_twin": robustness_twin(twin, generated[twin.name], seed, n_boot) if twin else None,
         "runtime_seconds": round(time.perf_counter() - started, 1),
@@ -209,7 +227,10 @@ def to_markdown(r: dict) -> str:
              f"${c['estimate']['limit_usd']:.2f}); actual ${act['cost_usd']:.2f} for {act['calls']} calls, "
              f"{act['input_tokens']:,} input + {act['cache_write_tokens']:,} cache-write + "
              f"{act['cache_read_tokens']:,} cache-read + {act['output_tokens']:,} output tokens; "
-             f"{len(act['errors'])} API errors.", ""]
+             f"{len(act['errors'])} API errors.",
+             f"Total cost of every response this experiment uses (all runs, incl. interrupted ones and "
+             f"retries): ${c['all_responses_used']['cost_usd']:.2f} for {c['all_responses_used']['calls']} "
+             f"responses.", ""]
     for ds in r["datasets"].values():
         f = ds["failures"]
         lines += [f"## {ds['title']} (target n = {ds['n_target']}, pool n = {ds['n_pool']})", ""]

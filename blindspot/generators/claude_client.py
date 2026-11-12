@@ -126,20 +126,53 @@ def message_record(message) -> dict:
                       "cache_read_input_tokens": getattr(u, "cache_read_input_tokens", 0) or 0}}
 
 
-def run_batch(client, specs: list[CallSpec], log: Callable[[str], None] = print) -> dict[str, dict]:
-    """Submit specs as one Message Batch, wait, and return {key: record or {'error': ...}}."""
+def batch_tag(specs: list[CallSpec]) -> str:
+    return cache_key(batch_of=sorted(s.key for s in specs))
+
+
+def pending_batch_path(specs: list[CallSpec], cache_dir: Path = CACHE_DIR) -> Path:
+    """Where the id of a submitted-but-not-collected batch for exactly these specs is kept."""
+    return cache_dir / "_batches" / f"{batch_tag(specs)}.json"
+
+
+def _submit_or_resume(client, specs: list[CallSpec], cache_dir: Path, log: Callable[[str], None]):
     from anthropic.types.message_create_params import MessageCreateParamsNonStreaming
     from anthropic.types.messages.batch_create_params import Request
 
+    path = pending_batch_path(specs, cache_dir)
+    if path.exists():
+        batch = client.messages.batches.retrieve(json.loads(path.read_text(encoding="utf-8"))["id"])
+        if batch.processing_status in ("in_progress", "ended"):
+            log(f"[batch] resuming {batch.id} ({batch.processing_status}) instead of resubmitting")
+            return batch, path
     batch = client.messages.batches.create(requests=[
         Request(custom_id=s.key, params=MessageCreateParamsNonStreaming(**s.params)) for s in specs])
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps({"id": batch.id, "n": len(specs)}), encoding="utf-8")
     log(f"[batch] submitted {batch.id} with {len(specs)} requests")
+    return batch, path
+
+
+def run_batch(client, specs: list[CallSpec], log: Callable[[str], None] = print,
+              cache_dir: Path = CACHE_DIR) -> dict[str, dict]:
+    """Submit (or resume) specs as one Message Batch, wait, and return {key: record or {'error': ...}}.
+
+    The batch id is saved until its results are collected, so an interrupted run resumes the same
+    batch instead of paying for it twice. Connection errors while polling are waited out.
+    """
+    import anthropic
+
+    batch, pending = _submit_or_resume(client, specs, cache_dir, log)
     started = time.monotonic()
     while batch.processing_status != "ended":
         if time.monotonic() - started > BATCH_TIMEOUT_SECONDS:
-            raise TimeoutError(f"batch {batch.id} did not finish in {BATCH_TIMEOUT_SECONDS} s")
+            raise TimeoutError(f"batch {batch.id} did not finish in {BATCH_TIMEOUT_SECONDS} s; rerun to resume")
         time.sleep(BATCH_POLL_SECONDS)
-        batch = client.messages.batches.retrieve(batch.id)
+        try:
+            batch = client.messages.batches.retrieve(batch.id)
+        except anthropic.APIConnectionError:
+            log(f"[batch] connection lost while polling {batch.id}; retrying")
+            continue
         c = batch.request_counts
         log(f"[batch] {batch.processing_status}: {c.succeeded} ok, {c.errored} errored, {c.processing} processing")
     out = {}
@@ -149,6 +182,7 @@ def run_batch(client, specs: list[CallSpec], log: Callable[[str], None] = print)
         else:
             detail = getattr(getattr(result.result, "error", None), "type", "") or result.result.type
             out[result.custom_id] = {"error": f"{result.result.type}:{detail}"}
+    pending.unlink(missing_ok=True)
     return out
 
 
@@ -175,7 +209,7 @@ def call_cached(client, specs: list[CallSpec], cache: ResponseCache, model: str,
     missing = [s for s in specs if records[s.key] is None]
     log(f"[cache] {len(specs) - len(missing)} hits, {len(missing)} to call")
     if missing:
-        fresh = run_batch(client, missing, log) if use_batch else run_concurrent(client, missing)
+        fresh = run_batch(client, missing, log, cache.dir) if use_batch else run_concurrent(client, missing)
         for key, rec in fresh.items():
             if "error" in rec:
                 usage.errors.append(f"{key}:{rec['error']}")

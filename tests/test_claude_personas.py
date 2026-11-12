@@ -195,3 +195,25 @@ def test_experiment1_runs_end_to_end_with_fake_client(tmp_path):
     assert "**claude_mode**" in md and "Robustness" in md and "Cost:" in md
     prompts = (tmp_path / "prompts" / "twin2k_empty_p1_user_prompts.txt").read_text("utf-8")
     assert SENTINEL_PERSONA not in prompts and SENTINEL_ANSWER not in prompts
+
+
+def test_interrupted_batch_is_resumed_not_resubmitted(cache):
+    from blindspot.generators.claude_client import pending_batch_path, run_batch
+
+    specs = cp.plan("toy", _demo(3), ITEMS, MODEL).specs
+    finished = FakeClient()
+    results = [SimpleNamespace(custom_id=s.key, result=SimpleNamespace(type="succeeded",
+                                                                       message=finished._message(dict(s.params))))
+               for s in specs]
+
+    def no_create(**_):
+        raise AssertionError("must not resubmit a pending batch")
+
+    client = SimpleNamespace(messages=SimpleNamespace(batches=SimpleNamespace(
+        create=no_create, retrieve=lambda _id: SimpleNamespace(id=_id, processing_status="ended"),
+        results=lambda _id: results)))
+    path = pending_batch_path(specs, cache.dir)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps({"id": "msgbatch_old", "n": len(specs)}), encoding="utf-8")
+    out = run_batch(client, specs, log=lambda _: None, cache_dir=cache.dir)
+    assert set(out) == {s.key for s in specs} and not path.exists()

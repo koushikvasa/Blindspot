@@ -81,6 +81,19 @@ def test_examples_are_anonymous_and_well_formed():
         assert differing == 8 and differing <= e["n_diff"]        # 8 biggest differences + 2 matches
 
 
+def test_big_model_rows_models_strip_and_scoreboard_lines_are_exported():
+    f = files()
+    items = {i["label"]: i for i in f["repairs_gss"]["items"]}
+    for label in ("Opus drafts, 25 real people as filter", "Opus drafts, 100 real people as filter"):
+        assert items[label]["kind"] == "ai_filtered" and items[label]["precision"] > 0.9
+        assert items[label]["note"].startswith("precision 0.9") and items[label]["note"].endswith("test split")
+    assert "Pick best of 50 Haiku drafts" in items                                  # Haiku rows are labelled as Haiku
+    models = f["models_gss"]
+    assert models["split"] == "test" and [m["key"] for m in models["models"]] == ["haiku", "sonnet", "opus"]
+    assert all(0 <= m["bunched_share"] <= 1 and 0 <= m["coverage"] <= 1 for m in models["models"] + models["references"])
+    assert {"opus_select", "sonnet_select", "copula_on_asked"} <= set(f["scoreboard_gss"]["methods"])
+
+
 def test_live_bundle_is_consistent_and_small_groups_are_excluded_from_fairness():
     f = files()
     live = f["live_gss"]

@@ -7,8 +7,8 @@
   const get = async (name) => { try { const r = await load(name); markSample(r.mock); return r; } catch (_) { return null; } };
 
   const CHAPTERS = [...document.querySelectorAll(".chapter")];
-  const [sumR, repR, boardR, fairR, exR, recR] = await Promise.all(
-    ["summary", "repairs_gss", "scoreboard_gss", "fairness_gss", "examples_gss", "realrecruit_gss"].map(get));
+  const [sumR, repR, boardR, fairR, exR, recR, modR] = await Promise.all(
+    ["summary", "repairs_gss", "scoreboard_gss", "fairness_gss", "examples_gss", "realrecruit_gss", "models_gss"].map(get));
   const summary = sumR?.data;
   const gssInfo = summary?.datasets?.gss, twinInfo = summary?.datasets?.twin;
   const mapCache = {};
@@ -143,6 +143,15 @@
     set($("failSource"), `${where()}; ${gssInfo.items ?? ""} questions. Flashpoint panel: n = ${gssInfo.crowds.flashpoint_panel?.n ?? "–"}. Hover a number for its source.`);
     numbers.ch4 = () => setFail(failIdx);
   }
+  (() => {
+    const m = modR?.data;
+    if (!m) { $("models").style.display = "none"; return; }
+    const cell = (c, ref) => `<div class="mcell ${ref ? "ref" : ""}" title="${esc(c.label)}: typical answers cover ${pct(c.coverage)} of real people (95% interval ${pct(c.coverage_ci[0])}–${pct(c.coverage_ci[1])}); on ${pct(c.bunched_share)} of the ${m.items} questions more than 80% of the crowd gives the same answer. GSS 2024, ${m.split} split, n = ${m.n}.">
+      <div class="mname">${esc(c.label)}${ref ? " (reference)" : ""}</div><div class="mcov num">${pct(c.coverage)}</div><div class="mlab">of real people covered</div>
+      <div class="mbun num">${pct(c.bunched_share)}</div><div class="mlab">of questions: over 80% give one answer</div></div>`;
+    $("models").innerHTML = `<div class="mhead"><b>Bigger models?</b><span>Typical answers · GSS 2024 · ${esc(m.split)} split · n = ${m.n} · ${m.items} questions</span></div>
+      <div class="mrow">${m.models.map((c) => cell(c, false)).join("")}${cell(m.references[0], true)}</div><p class="fine">${esc(m.caption)}</p>`;
+  })();
 
   // ---------- 5 · self-repair ----------
   let repairView = 0;
@@ -150,7 +159,8 @@
   function chartRepairs(d) {
     const ai = d.items.filter((i) => i.kind !== "real"), real = d.items.filter((i) => i.kind === "real");
     const best = ai.reduce((a, b) => (b.coverage > a.coverage ? b : a), ai[0]);
-    const W = 990, x0 = 330, x1 = 770, rowH = 46, head = 40, x = (v) => x0 + v * (x1 - x0);
+    const opus25 = ai.find((i) => /^Opus/.test(i.label));
+    const W = 1000, x0 = 340, x1 = 770, rowH = 46, head = 40, x = (v) => x0 + v * (x1 - x0);
     const H = head * 2 + (ai.length + real.length) * rowH + 56;
     let y = 8, s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Coverage of each repair on people the agent never saw">`;
     for (let v = 0; v <= 1.0001; v += 0.25) s += `<line x1="${x(v)}" x2="${x(v)}" y1="0" y2="${H - 30}" stroke="rgba(244,240,232,.08)"/><text x="${x(v)}" y="${H - 8}" text-anchor="middle">${Math.round(v * 100)}%</text>`;
@@ -158,7 +168,7 @@
       s += `<circle cx="14" cy="${y + 14}" r="6" fill="${dot}"/><text class="gt" x="30" y="${y + 19}">${name}</text>`;
       y += head - 6;
       for (const it of rows) {
-        const isBest = it === best, isStar = it === real[0];
+        const isBest = it === best, isStar = it === real[0] || it === opus25;
         const col = it.kind === "real" ? "#f4f0e8" : it.kind === "ai_filtered" ? "#7ff0dc" : "#3ee0c6";
         s += `<text class="lbl" x="${x0 - 14}" y="${y + 18}" text-anchor="end">${esc(it.label)}</text>`;
         if (it.note) s += `<text x="${x0 - 14}" y="${y + 35}" text-anchor="end" style="font-size:14px;fill:#8089a3">${esc(it.note)}</text>`;
@@ -177,12 +187,12 @@
     return { svg: s + "</svg>", best, real };
   }
   function chartBoard(sb) {
-    const W = 900, H = 470, L = 56, Rm = 270, T = 18, B = 52, xs = sb.budgets;
+    const W = 980, H = 470, L = 56, Rm = 350, T = 18, B = 52, xs = sb.budgets;
     const x = (b) => L + ((b - xs[0]) / (xs[xs.length - 1] - xs[0])) * (W - L - Rm);
     const vals = []; Object.values(sb.methods).forEach((m) => vals.push(...m.lo, ...m.hi)); Object.values(sb.references || {}).forEach((r) => vals.push(r.value));
     const lo = Math.max(0, Math.floor((Math.min(...vals) - 0.04) * 20) / 20), hi = Math.min(1, Math.ceil((Math.max(...vals) + 0.02) * 20) / 20);
     const y = (v) => T + (1 - (v - lo) / (hi - lo)) * (H - T - B);
-    const colors = { copula_on_asked: "#f4f0e8", claude_plus_asked: "#ffc24b", blindspot_select_fp: "#3ee0c6", blindspot_select: "#1f9f8d" };
+    const colors = { copula_on_asked: "#f4f0e8", claude_plus_asked: "#ffc24b", opus_select: "#3ee0c6", sonnet_select: "#2aa896", blindspot_select_fp: "#7fb8b0", blindspot_select: "#6aa39b" };
     let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Coverage by number of real people">`;
     for (let v = lo; v <= hi + 1e-9; v += 0.1) s += `<line x1="${L}" x2="${W - Rm}" y1="${y(v)}" y2="${y(v)}" stroke="rgba(244,240,232,.08)"/><text x="${L - 10}" y="${y(v) + 5}" text-anchor="end">${Math.round(v * 100)}%</text>`;
     xs.forEach((b) => (s += `<text x="${x(b)}" y="${H - B + 24}" text-anchor="middle">${b}</text>`));
@@ -207,12 +217,15 @@
     if (repairView === 0) {
       if (!rep) { $("repairChart").innerHTML = `<div class="empty">Repair results not exported yet.</div>`; return; }
       const { svg, best, real } = chartRepairs(rep), last = real[real.length - 1];
+      const opus = rep.items.filter((i) => /^Opus/.test(i.label)), o25 = opus[0], o100 = opus[opus.length - 1];
+      const n25 = /\d+/.exec(real[0].label)?.[0] ?? "a few", n100 = /\d+/.exec(last.label)?.[0] ?? "more";
+      const pOpus = Math.floor(Math.min(...opus.map((i) => i.precision)) * 100) / 100;
       $("repairChart").innerHTML = svg; set($("repairCaption"), rep.caption || "");
       $("repAi").dataset.v = 0; $("repReal").dataset.v = 0;
-      countTo($("repAi"), best.coverage, pct, 700); countTo($("repReal"), last.coverage, pct, 700);
-      set($("repAiL"), `best AI repair: ${best.label.toLowerCase()}${best.note ? ` (${best.note})` : ""}`);
-      set($("repRealL"), `statistics on the same real people: ${last.label.toLowerCase()}`);
-      set($("repairExplain"), `The best AI repair still needed real people as a filter${best.note ? ` (${best.note})` : ""}. Statistics fitted on the same number of real people do better (${pct(last.coverage)}). Even ${/\d+/.exec(real[0].label)?.[0] ?? "a few"} real people reach ${pct(real[0].coverage)}. Every repair was scored on real people it had never seen.`);
+      countTo($("repAi"), o25.coverage, pct, 700); countTo($("repReal"), real[0].coverage, pct, 700);
+      set($("repAiL"), o25.label);
+      set($("repRealL"), `Statistics on the same ${n25} real people`);
+      set($("repairExplain"), `With only ${n25} real people as the filter, Opus’s picks cover ${pct(o25.coverage)} and statistics on the same people ${pct(real[0].coverage)}: they tie on coverage, and Opus’s people look more realistic (precision ${pOpus.toFixed(2)}+ vs ${real[0].precision.toFixed(2)}). With ${n100} people statistics still lead: ${pct(last.coverage)} vs ${pct(o100.coverage)}. Every repair was scored on real people it had never seen.`);
       title(["repAi", "repReal"], `${where()}. Bars show the seed range, or a 95% interval for single runs.`);
       set($("repairSource"), `${where()}. Coverage as in chapter 2. Rows with a note use a different item set or number of real people. Ranges: min–max over seeds; single runs show a 95% interval.`);
     } else {

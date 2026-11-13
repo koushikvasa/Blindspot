@@ -158,6 +158,21 @@ button { font-family: inherit; }
 .fcard .nums b { color: var(--text); font-size: calc(17 * var(--u)); font-family: var(--display); font-weight: 600; }
 .fcard .why { color: var(--muted); font-size: calc(14 * var(--u)); line-height: 1.4; margin: 0; }
 
+/* ---------- ch4: "Bigger models?" strip ---------- */
+.models { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: clamp(12px, 1.2vw, 18px) clamp(14px, 1.4vw, 22px); }
+.models .mhead { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline; margin-bottom: 10px; }
+.models .mhead b { font-family: var(--display); font-size: calc(20 * var(--u)); font-weight: 600; }
+.models .mhead span { color: var(--faint); font-size: calc(13.5 * var(--u)); }
+.models .mrow { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(8px, 1vw, 16px); }
+.models .mcell { border-left: 2px solid var(--line-2); padding-left: 12px; min-width: 0; }
+.models .mcell.ref { border-left-style: dashed; }
+.models .mname { font-size: calc(14 * var(--u)); font-weight: 600; margin-bottom: 4px; }
+.models .mcov, .models .mbun { font-family: var(--display); font-size: calc(26 * var(--u)); font-weight: 600; line-height: 1.05; }
+.models .mbun { color: var(--miss); margin-top: 6px; }
+.models .mlab { color: var(--muted); font-size: calc(13 * var(--u)); line-height: 1.25; }
+.models .fine { margin-top: 10px; }
+@media (max-width: 640px) { .models .mrow { grid-template-columns: 1fr 1fr; } }
+
 /* ---------- charts (ch5, ch6) ---------- */
 .chartcard { background: var(--panel-solid); border: 1px solid var(--line-2); border-radius: var(--radius); padding: clamp(14px, 1.6vw, 24px); box-shadow: 0 30px 80px rgba(0,0,0,.4); }
 .chartcard svg { width: 100%; height: auto; display: block; max-height: 64vh; }

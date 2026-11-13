@@ -21,11 +21,12 @@ Scored on **held-out respondents no method ever saw** (one-time holdout run):
 | ...by other real people (ceiling) | 98% | 98% |
 
 1. **AI crowds look real but miss a third to two thirds of real people.** Claude's synthetic people look 100% realistic, yet no one in the crowd answers like 37% (GSS) to 65% (Twin) of real respondents.
-2. **Every AI-only crowd we tested covered fewer people than shuffled answers.** Three generators (Claude Haiku 5.5, GPT-4.1-mini twins, Flashpoint's synthetic panel), two national surveys. This matches recent findings that LLM-simulated respondents match answer shares but not respondents (Kumagae & Kaneko, 2026).
+2. **Every AI-only crowd we tested covered fewer people than shuffled answers.** Three generators (Claude Haiku 5.5, GPT-4.1-mini twins, Flashpoint's synthetic panel), two national surveys. This matches recent findings that LLM-simulated respondents match answer shares but not respondents (Kumagae & Kaneko, 2026). One exception on the test split: Opus 5.5's random answers tie shuffled answers on all 24 GSS items (0.746 vs 0.740), though not on the 20 live items (0.778 vs 0.823); see point 4.
 3. **They fail in three different ways.** Claude's typical answers are too alike (35% of GSS questions have over 80% of synthetic people on one answer; real people: 0%). Claude's random answers have the right spread but incoherent combinations. Flashpoint's panel has realistic spread but combines answers about as well as shuffling.
-4. **Prompting cannot teach the AI the people it misses.** We tried five repairs: teaching Claude written archetypes of missed people, verified recipes, picking the best of 50 AI drafts per person, mixing models, and adding Flashpoint's panel to the candidate pool. The best (picking from 50 drafts, using real people as a filter) reached 82%.
-5. **A few real people beat all of it.** A Gaussian copula fitted on just 25 real respondents covers 85% of held-out people; on 50, 89%.
-6. **The misses are not random.** On the test split, the Claude crowd covered 47% of people with household income under $30k versus 80% of those over $110k (and 59% of women vs 70% of men). Many intervals overlap; read this as a pattern worth checking, not proof.
+4. **Bigger models are more alike, not more diverse.** On the GSS test split (20 live items), Claude's typical answers put more than 80% of people on one answer in 30% of the questions with Haiku 5.5, 45% with Opus 5.5 and 55% with Sonnet 5.5 (real people: 0%). Opus's typical answers cover 70% of real people, still below shuffled answers (82%); Sonnet's cover 50%.
+5. **Prompting cannot teach the AI the people it misses.** We tried five repairs: teaching Claude written archetypes of missed people, verified recipes, picking the best of 50 AI drafts per person, mixing models, and adding Flashpoint's panel to the candidate pool. The best (picking from 50 drafts, using real people as a filter) reached 82%.
+6. **A few real people beat all of it.** A Gaussian copula fitted on just 25 real respondents covers 85% of held-out people; on 50, 89%. On the test split, selecting drafts from Opus 5.5 with only those 25 real people as the filter ties statistics on coverage (0.807 vs 0.815, seed ranges overlap) with higher realism (precision 0.98 vs 0.87); with Haiku 5.5 (0.699) or Sonnet 5.5 (0.775) it falls short.
+7. **The misses are not random.** On the test split, the Claude crowd covered 47% of people with household income under $30k versus 80% of those over $110k (and 59% of women vs 70% of men). Many intervals overlap; read this as a pattern worth checking, not proof.
 
 ## How "missing" is measured
 
@@ -83,7 +84,7 @@ uvicorn blindspot.api.main:app --port 8000   # demo at http://localhost:8000
 - Two US surveys with multiple-choice questions. Open-ended answers and other countries are untested.
 - Coverage is one reasonable definition of "missing"; others exist.
 - The fix needs a small real sample. That is the point, but it is not free.
-- Claude crowds used Claude Haiku 5.5; larger models were not tested.
+- Most Claude crowds used Claude Haiku 5.5; Sonnet 5.5 and Opus 5.5 were tested on GSS only, on the test split (experiment 1b).
 
 ## Data and references
 

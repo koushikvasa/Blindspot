@@ -73,3 +73,10 @@ Only written once real Flashpoint respondents exist. If absent, the scene shows 
  "coverage_before": 0.608, "coverage_after": 0.85, "method": "statistics fitted on recruits, reweighted",
  "caption": "One plain sentence, including how this compares with 50 random pool people."}
 ```
+
+## Additions after H8
+
+- `repairs_gss.json` items may carry `"precision"` (realism of that crowd, test split) where known; the Opus rows ("Opus drafts, 25/100 real people as filter") come from H4d-big.
+- `scoreboard_gss.json` also has the methods `opus_select` ("Opus drafts filtered by them") and `sonnet_select`; the Haiku selection lines are labelled "Haiku drafts filtered by them".
+- `examples_gss.json`: three anonymous GSS test respondents the Claude crowd misses, next to the closest Claude person: `{"examples": [{"label": "Person A", "ratio": 1.2, "n_diff": 9, "n_items": 20, "rows": [{"q": "short question (40 chars max)", "real": "answer label", "ai": "answer label"}]}]}`. No ids, no demographics. The UI shows `n_diff` and the rows (not `ratio`).
+- `models_gss.json` (chapter 4 strip, GSS test split, 20 live items): `{"split": "test", "n": 334, "items": 20, "models": [{"key": "haiku", "label": "Haiku 5.5", "coverage": 0.608, "coverage_ci": [lo, hi], "bunched_share": 0.30}], "references": [{"key": "shuffled_answers", ...}, {"key": "other_real_people", ...}], "caption": "..."}`. `bunched_share` = share of items where more than 80% of the crowd gives one answer; coverage is for typical answers (claude_mode).

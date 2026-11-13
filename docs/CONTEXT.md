@@ -75,6 +75,26 @@ Why they failed: H4's gap detection used the tiny asked set as reference (found 
 | claude_mode | 0.567 | 0.997 |
 Flashpoint: no bunching, entropy close to real; the two test panels agreed (0.611 vs 0.617) but the two holdout panels did not (0.759 vs 0.674), so run-to-run stability is not established; per-item distributions ~2× farther from real than baselines (TV 0.14 vs 0.07). Calibration (as described by Flashpoint's agent, unverified) only reweights age/gender composition.
 
+### Experiment 1b: do bigger models reduce the gap? (GSS test split only; Twin not run; `results/experiment1b.md`)
+Same H3 generator and prompts, standard API (batch blocked for this organisation), cost Sonnet 5.5 $2.37 and Opus 5.5 $4.76. k=5, n=334.
+| coverage | Haiku 5.5 | Sonnet 5.5 | Opus 5.5 | shuffled answers |
+| --- | --- | --- | --- | --- |
+| typical answers, 24 items | 0.638 | 0.539 | 0.710 | 0.740 |
+| random answers, 24 items | 0.371 | 0.587 | 0.746 | 0.740 |
+| typical answers, 20 live items | 0.608 | 0.503 | 0.701 | 0.823 |
+| random answers, 20 live items | 0.473 | 0.653 | 0.778 | 0.823 |
+| select_from_50, lambda 0.5, pool filter (20 items) | 0.789 | 0.896 | 0.935 | 0.823 |
+Share of items with over 80% on one option (typical answers, 20 items): Haiku 0.30, Sonnet 0.55, Opus 0.45, real people 0. Bigger models are not more diverse. No typical-answers crowd beats shuffled answers or copula-on-25 (0.815 on 20 items); only Opus random answers on the 24 items tie shuffled (0.746 vs 0.740). Selection from Sonnet/Opus probabilities beats both, but it uses the 558-person pool as its filter.
+
+### H4d-big: select from big-model candidates with only B asked people as the filter (zero cost, 10 seeds, 20 items, `results/h4d_big.md`)
+| coverage | B=25 | B=50 | B=75 | B=100 |
+| --- | --- | --- | --- | --- |
+| select, Opus probabilities | 0.807 | 0.851 | 0.860 | 0.877 |
+| select, Sonnet probabilities | 0.775 | 0.797 | 0.825 | 0.854 |
+| select, Haiku probabilities (H4d) | 0.699 | 0.698 | 0.750 | 0.765 |
+| copula on the same asked people | 0.815 | 0.868 | 0.885 | 0.893 |
+Opus ties the copula at B=25 within noise (4/10 paired wins, mean difference -0.008) and never beats it on average; Sonnet and Haiku fall short. Opus selections are more realistic (precision 0.96-0.99 vs 0.87-0.89 for the copula). Near-duplicate share at most 0.001 on average.
+
 ### Final holdout run (once, 2026-11-13, code commit a828ae1, `results/final_holdout.md`; never rerun)
 Fit and filter on pool only; Claude holdout personas from demographics only (cost $0.10). k=5.
 | GSS holdout (n=224, 20 live items) | coverage | precision |
@@ -133,8 +153,8 @@ Costs so far: about $2.6 of Anthropic API (Haiku 5.5). Flashpoint: $0 (synthetic
 - Before building a new design, a fresh reviewer ("goldfish") reads the spec and lists ways it could mislead or fail.
 - Tune on test; report holdout once at the end.
 
-## 8. Status: everything zero-cost is done
-- **Done:** bake-off round 1 (`results/bakeoff1.md`), H4c (`h4c.md`), H4d (`h4d.md`), screener simulation (`screener.md`: a 3-4 item screener finds missed people, AUC 0.78-0.80, but statistics fit on screened recruits are biased and do worse), Flashpoint audit (`experiment_fp.md`), final holdout run (once, `final_holdout.md`), real-study preparation (loader, `experiment_real.py`, fixture tests; nothing launched or paid), **H8 UI export** (18 files in `results/ui/`, 13 map coverage assertions pass, `ui_export.md`), **privacy cleanup** (agent logs and per-respondent prompts moved to `results_private/`; result writers store `n_uncovered`, not respondent ids; README carries the GSS attribution).
+## 8. Status: experiments are CLOSED (no more runs)
+- **Done:** experiment 1b (bigger models, GSS only) and H4d-big (see section 4), bake-off round 1 (`results/bakeoff1.md`), H4c (`h4c.md`), H4d (`h4d.md`), screener simulation (`screener.md`: a 3-4 item screener finds missed people, AUC 0.78-0.80, but statistics fit on screened recruits are biased and do worse), Flashpoint audit (`experiment_fp.md`), final holdout run (once, `final_holdout.md`), real-study preparation (loader, `experiment_real.py`, fixture tests; nothing launched or paid), **H8 UI export** (18 files in `results/ui/`, 13 map coverage assertions pass, `ui_export.md`), **privacy cleanup** (agent logs and per-respondent prompts moved to `results_private/`; result writers store `n_uncovered`, not respondent ids; README carries the GSS attribution).
 - **Not done:** the real Flashpoint/Prolific study (see section 9), making the repo public, README "Status" line.
 
 ## 9. Next (not now)

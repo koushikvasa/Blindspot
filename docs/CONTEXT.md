@@ -1,6 +1,6 @@
 # Blindspot: full project context (read this first in a new session)
 
-Last updated: Fri 2026-11-13, ~1 PM ET. Hackathon is **Sat 2026-11-14**, Fordham "AI Hackathon: Hack the Unreachable", Self-Improving AI track. Presentations at 3:30 PM. Repo: `D:\blindspot` (GitHub `koushikvasa/Blindspot`, currently **private**; must be public by submission after cleanup).
+Last updated: Fri 2026-11-13, evening ET. Hackathon is **Sat 2026-11-14**, Fordham "AI Hackathon: Hack the Unreachable", Self-Improving AI track. Presentations at 3:30 PM. Repo: `D:\blindspot` (GitHub `koushikvasa/Blindspot`, currently **private**; the privacy cleanup is done, make it public at submission).
 
 Read with: `CLAUDE.md` (hard rules), `docs/PLAN.md`, `docs/DATA.md`, `docs/METRICS.md`, `docs/FLASHPOINT.md`, `docs/UI_DATA_CONTRACT.md`, and the `results/*.md` files.
 
@@ -105,15 +105,15 @@ Costs so far: about $2.6 of Anthropic API (Haiku 5.5). Flashpoint: $0 (synthetic
 
 ## 5. Code map
 - `blindspot/data/`: `schema.py` (`Item`, `Respondents`), `twin2k.py`, `gss.py`, `items.py`, `inspect.py`
-- `blindspot/eval/`: `splits.py` (`make_splits`, `assert_no_leak`), `experiment0.py`, `experiment1.py`, `experiment2.py`, `experiment2b.py`, `experiment_fp.py`
+- `blindspot/eval/`: `splits.py` (`make_splits`, `assert_no_leak`), `experiment0.py`, `experiment1.py`, `experiment2.py`, `experiment2b.py`, `experiment_fp.py`, `bakeoff1.py`, `h4c.py`, `h4d.py`, `screener.py`, `experiment_real.py` (scores the real Prolific study), `export_ui.py` (H8), `final_holdout.py` (the ONLY script that scores the holdout; run once, never rerun)
 - `blindspot/space/`: encoding, family-weighted Gower, maps (UMAP)
 - `blindspot/coverage/`: `evaluate()` with coverage, precision, rcg_ratio, CIs, k sensitivity
-- `blindspot/generators/`: `baselines.py` (independent_marginals, gaussian_copula, other_real_people), `claude_personas.py` (cached, cost guard), `flashpoint_panel.py`
+- `blindspot/generators/`: `baselines.py` (independent_marginals, gaussian_copula, other_real_people), `claude_personas.py` (cached, cost guard), `flashpoint_panel.py`, `flashpoint_real.py` (loads the completed real-respondent CSV)
 - `blindspot/agent/`: H4 and H4b loops (parked)
 - `blindspot/api/`: `main.py`, `live.py` (demo server; do not change except for bugs)
 - `web/`: static demo UI (story `/`, phone `/join`, projector `/stage`), sample data in `web/mock/`; real data goes to `results/ui/` via H8 (`handovers/H8-export-ui-data.md`)
-- `results/`: experiment JSON/MD, `results/agent/`, `results/cache/` (ignored), `results/maps/` (ignored)
-- Tests: `pytest -q` (107 passing as of H5)
+- `results/`: experiment JSON/MD; `results/ui/` (H8 export for the demo, no ids); `results/prompts/` (system prompts and request settings only); `results/agent/` (README only: the H4/H4b logs moved); `results/cache/` and `results/maps/` (ignored). Private and ignored: `results_private/agent/` (H4/H4b run logs with respondent ids and unverified model-written text) and `results_private/prompts/` (per-respondent prompts)
+- Tests: `pytest -q` (120 passing)
 - Environment: Windows, Cursor, `.venv` (Anaconda Python 3.12). `CLAUDE_MODEL=claude-haiku-5-5` in `.env`. Flashpoint MCP connected at user scope (OAuth).
 
 ## 6. Hard rules (summary; full text in CLAUDE.md)
@@ -133,32 +133,11 @@ Costs so far: about $2.6 of Anthropic API (Haiku 5.5). Flashpoint: $0 (synthetic
 - Before building a new design, a fresh reviewer ("goldfish") reads the spec and lists ways it could mislead or fail.
 - Tune on test; report holdout once at the end.
 
-## 8. CURRENT TASK (do this now)
+## 8. Status: everything zero-cost is done
+- **Done:** bake-off round 1 (`results/bakeoff1.md`), H4c (`h4c.md`), H4d (`h4d.md`), screener simulation (`screener.md`: a 3-4 item screener finds missed people, AUC 0.78-0.80, but statistics fit on screened recruits are biased and do worse), Flashpoint audit (`experiment_fp.md`), final holdout run (once, `final_holdout.md`), real-study preparation (loader, `experiment_real.py`, fixture tests; nothing launched or paid), **H8 UI export** (18 files in `results/ui/`, 13 map coverage assertions pass, `ui_export.md`), **privacy cleanup** (agent logs and per-respondent prompts moved to `results_private/`; result writers store `n_uncovered`, not respondent ids; README carries the GSS attribution).
+- **Not done:** the real Flashpoint/Prolific study (see section 9), making the repo public, README "Status" line.
 
-Two zero-cost experiments, back to back, GSS test split, never holdout, **no new Claude or Flashpoint calls**.
-
-### Part 1: Bake-off round 1 (select-from-many + model mix)
-- For each GSS test persona, draw 50 candidates from the cached `claude_sampled` per-item probabilities (seeded, independent per item).
-- `realism` = mean Gower distance to the 5 nearest **pool** real people (lower = more realistic). `novelty` = distance to the nearest already-selected crowd member.
-- Greedily build a same-size crowd: for each persona pick the candidate minimising `realism − λ·novelty`, λ ∈ {0, 0.5, 1, 2}.
-- Report coverage, precision, CIs, k=3/5/10 per λ next to claude_mode, claude_sampled, gaussian_copula (pool), other_real_people. Report near-duplicate share (realism uses pool data as a filter, not copying).
-- Repeat the selection using Flashpoint's two saved panels as the candidate pool (select 200 from 400 with the same score) and evaluate at n=200 like Experiment FP.
-- Twin model mix: crowd = 50% claude_mode + 50% gpt41mini_twin (same n, seeded) and the union upper bound (a real person covered if either full crowd covers them).
-- Output `results/bakeoff1.json` and `results/bakeoff1.md`. **Commit, then continue to Part 2.**
-
-### Part 2: H4c, learning whom to ask
-- Crowd at each budget = claude_mode with the asked real pool people swapped in (label: "includes real respondents"; near-duplicate guard exempts those rows). Budgets 25/50/75/100 (rounds of 25), **10 seeds**.
-- **random**: random pool people (equals claude_plus_asked).
-- **targeted**: round 1 random. After each round: miss score per asked person = Gower distance to the nearest **claude_mode** crowd member; fit logistic regression on one-hot demographics with label = miss score above the asked-people median; next round asks 70% of the unasked pool people with highest predicted miss probability (only demographics visible before asking) + 30% random. Log coefficients per round.
-- Same comparison for gaussian_copula fit on targeted vs random asked people.
-- **Self-knowledge**: each round, the agent's estimated share of the population its claude_mode crowd misses (from asked people, reweighted to pool demographics) next to the true test uncovered share.
-- **Fairness audit**: claude_mode coverage on test by demographic group (age band, gender, education, income band, region), only groups with n ≥ 30, bootstrap CIs. Plain table, no interpretation.
-- Output `results/h4c.json` and `results/h4c.md`. Commit.
-
-### Report back
-Both parts' tables (mean and seed range), near-duplicate shares, runtime. Then **stop**.
-
-## 9. After this (not now)
-- H8: export real results into `results/ui/` for the demo (`handovers/H8-export-ui-data.md`), updated to the final story.
-- Clean public files (remove model-written demographic reasons from `results/agent/` logs or move them out of the repo), README, then make the repo public.
-- Holdout headline run (once).
+## 9. Next (not now)
+- **Real study (needs funds):** the survey draft "GSS live items (20) + demographics (Prolific n=50)" exists on Flashpoint, unpublished. Quote 2026-11-13: Prolific n=50 US adults, $212.62 total (base $191.00, ReDem $19.00, Research Defender $2.62), billed by Stripe Checkout (x402 USDC on Base only if the tool returns an x402 envelope; needs a signer, `FLASHPOINT_WALLET_ADDRESS` is empty). Launch with `request_panel_payment` (it auto-publishes; acknowledge "no QA run" and "no quotas"); add a Total quota of 50 so the study closes itself. Then export the labelled CSV to `data/raw/flashpoint/real_prolific_n50.csv`, run `python -m blindspot.eval.experiment_real`, and write `results/ui/realrecruit_gss.json`. Never launch or pay without the user's explicit approval (rule 10).
+- Update the README "Status" line, then make the repo public.
+- The holdout was run once; do not run it again.

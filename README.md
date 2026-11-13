@@ -2,16 +2,103 @@
 
 **Find who your synthetic crowd leaves out.**
 
-AI-simulated survey respondents ("silicon samples") can match every answer's overall share while missing whole kinds of real people. Blindspot audits a synthetic crowd against real survey respondents, finds the real people it cannot imagine, requests examples of exactly those people, learns to imagine them, and proves it on real people it never saw.
+Teams increasingly use AI to simulate survey respondents ("synthetic panels", "silicon samples"). Blindspot audits a synthetic crowd against real survey respondents, finds the real people it cannot imagine, and tests what actually brings them back.
 
-Built for *AI Hackathon: Hack the Unreachable* (Fordham, Nov 14, 2026), Self-Improving AI track.
+Built in two days for **AI Hackathon: Hack the Unreachable** (Fordham, Nov 14, 2026), Self-Improving AI track.
 
-> Status: pre-build. See `docs/PLAN.md` for modules and `handovers/` for build steps.
+---
 
-## Data (not in this repo)
-- Twin-2K-500 (Toubia et al., 2025), CC BY 4.0: https://huggingface.co/datasets/LLM-Digital-Twin/Twin-2K-500
-- General Social Survey 2024 (NORC): https://gss.norc.org/get-the-data/stata.html
+## What we found
 
-The General Social Survey (GSS) is a project of the independent research organization NORC at the University of Chicago, with principal funding from the National Science Foundation.
+Scored on **held-out respondents no method ever saw** (one-time holdout run):
 
-Place downloads in `data/raw/` (git-ignored). See `docs/DATA.md`.
+| | GSS 2024 (n=224) | Twin-2K-500 (n=412) |
+| --- | --- | --- |
+| Real people covered by a Claude crowd | **63%** | **35%** |
+| ...by GPT-4.1-mini digital twins (built from each person's own 500 answers) | n/a | **35%** |
+| ...by randomly shuffled real answers | 85% | 60% |
+| ...by a simple statistical model fitted on **25 real people** | **85%** | n/a |
+| ...by other real people (ceiling) | 98% | 98% |
+
+1. **AI crowds look real but miss a third to two thirds of real people.** Claude's synthetic people look 100% realistic, yet no one in the crowd answers like 37% (GSS) to 65% (Twin) of real respondents.
+2. **Every AI-only crowd we tested covered fewer people than shuffled answers.** Three generators (Claude Haiku 5.5, GPT-4.1-mini twins, Flashpoint's synthetic panel), two national surveys. This matches recent findings that LLM-simulated respondents match answer shares but not respondents (Kumagae & Kaneko, 2026).
+3. **They fail in three different ways.** Claude's typical answers are too alike (35% of GSS questions have over 80% of synthetic people on one answer; real people: 0%). Claude's random answers have the right spread but incoherent combinations. Flashpoint's panel has realistic spread but combines answers about as well as shuffling.
+4. **Prompting cannot teach the AI the people it misses.** We tried five repairs: teaching Claude written archetypes of missed people, verified recipes, picking the best of 50 AI drafts per person, mixing models, and adding Flashpoint's panel to the candidate pool. The best (picking from 50 drafts, using real people as a filter) reached 82%.
+5. **A few real people beat all of it.** A Gaussian copula fitted on just 25 real respondents covers 85% of held-out people; on 50, 89%.
+6. **The misses are not random.** On the test split, the Claude crowd covered 47% of people with household income under $30k versus 80% of those over $110k (and 59% of women vs 70% of men). Many intervals overlap; read this as a pattern worth checking, not proof.
+
+## How "missing" is measured
+
+Each person is their full set of answers. Distance between two people is a Gower distance over the survey items, with each question family weighted equally. A real person is **covered** if at least one synthetic person is at least as close to them as their 5th most similar real person (the k-NN coverage metric from Naeem et al., 2020). **Precision** is the share of synthetic people who fall inside some real person's neighbourhood, i.e. look like a plausible real person. Results hold at k = 3, 5 and 10, and with unweighted distance.
+
+## The product idea
+
+A coverage check every synthetic panel should ship with:
+
+1. Plug in a synthetic panel from any vendor.
+2. Add a small real sample (25–100 people) on the same questions.
+3. Get a Blindspot report: coverage, precision, who is missing (by answer pattern and by group), and how the panel fails.
+4. Get the fix that works on your data, with the evidence. In our tests that fix was a model fitted on the small real sample, not a better prompt.
+
+This fits the "synthetic first, escalate to real" workflow: Blindspot tells you when synthetic is enough and whom to ask when it is not.
+
+## What's in the repo
+
+```
+blindspot/data        loaders for Twin-2K-500 and GSS, item selection
+blindspot/space       family-weighted Gower distance, 2-D maps
+blindspot/coverage    coverage, precision, bootstrap CIs, k sensitivity
+blindspot/generators  baselines (shuffled answers, Gaussian copula, other real people),
+                      Claude personas (cached), Flashpoint synthetic panel loader
+blindspot/agent       the repair loops we tried (kept for transparency)
+blindspot/eval        experiments 0–2, bake-off, H4c/H4d, Flashpoint audit, final holdout
+blindspot/api, web    the demo: story, live "can the AI imagine you?" phone page, stage view
+results/              every experiment's tables (.md) and numbers (.json)
+docs/                 data notes, metrics, Flashpoint notes, project context
+handovers/            the step-by-step build specs, including the ones that failed
+```
+
+## Run it
+
+```powershell
+python -m venv .venv; .\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+# put the datasets in data/raw/ (see docs/DATA.md), add ANTHROPIC_API_KEY to .env
+python -m blindspot.data.inspect
+python -m blindspot.eval.experiment0      # no API calls
+python -m blindspot.eval.experiment1      # cached Claude crowd (~$0.25 first run)
+uvicorn blindspot.api.main:app --port 8000   # demo at http://localhost:8000
+```
+
+## Method and honesty notes
+
+- **Splits:** each dataset is split once (seed 42) into pool (50%, used for fitting and filters), test (30%, used while developing) and holdout (20%, scored once at the end).
+- **No copying:** synthetic crowds never contain real answer rows unless a method is explicitly labelled as including real respondents; a near-duplicate check is reported for every crowd.
+- **Failures are reported:** two agent designs that tried to teach Claude the missing people did not improve coverage. Their code, specs and results are in the repo.
+- **Twin persona leak avoided:** Twin-2K-500 persona text contains retest answers; it never enters any prompt.
+- **Flashpoint panel:** uncalibrated; gender × age and education matched to the test set, race, income and geography generated by Flashpoint. Its two holdout panels scored 0.759 and 0.674, so run-to-run variation is real.
+
+## Limitations
+
+- Two US surveys with multiple-choice questions. Open-ended answers and other countries are untested.
+- Coverage is one reasonable definition of "missing"; others exist.
+- The fix needs a small real sample. That is the point, but it is not free.
+- Claude crowds used Claude Haiku 5.5; larger models were not tested.
+
+## Data and references
+
+- Twin-2K-500: Toubia et al. (2025), CC BY 4.0. https://huggingface.co/datasets/LLM-Digital-Twin/Twin-2K-500
+- General Social Survey 2024 (Davern, Bautista, Freese, Herd and Morgan, General Social Survey 1972-2024). The General Social Survey (GSS) is a project of the independent research organization NORC at the University of Chicago, with principal funding from the National Science Foundation. https://gss.norc.org
+  The demo serves 334 anonymous GSS test-split answer vectors (20 items, encoded, no ids) so visitors can be scored live.
+- Kumagae & Kaneko (2026), *Silicon Samples Match the Answers but Not the Respondents*, arXiv:2610.30900.
+- Naeem et al. (2020), *Reliable Fidelity and Diversity Metrics for Generative Models*, ICML.
+- Argyle et al. (2023), *Out of One, Many: Using Language Models to Simulate Human Samples*, Political Analysis.
+- Synthetic panel: Flashpoint.AI (https://flashpoint.ai), the hackathon's research platform.
+
+Raw data is not redistributed here; see `docs/DATA.md` to download it.
+
+## Credits
+
+Koushik Vasa ([koushikvasa.github.io](https://koushikvasa.github.io)). Built with Claude (Anthropic) and Claude Code.
+
+License: MIT

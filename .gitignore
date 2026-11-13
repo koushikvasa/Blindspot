@@ -19,3 +19,6 @@ results_private/
 # only the README is public under results/agent/
 results/agent/*
 !results/agent/README.md
+
+# per-respondent prompts stay private (only system prompts and request settings are tracked)
+results/prompts/*_user_prompts.txt

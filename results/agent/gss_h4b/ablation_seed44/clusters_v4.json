@@ -1,0 +1,242 @@
+[
+ {
+  "id": "C1",
+  "round_created": 1,
+  "n_members": 82,
+  "share_of_asked": 0.82,
+  "attempts": 1,
+  "status": "accepted",
+  "variants": [
+   {
+    "name": "Guarded trust with routine social life",
+    "text": "These respondents hold low interpersonal trust and low trust in institutions, yet report a generally routine, middling-satisfied outlook. Their social lives are modest and infrequent, with friends outside the neighborhood seen rarely and relatives seen a few times a month. Financial worry sits alongside an average self-assessed income and a self-placement in the working or middle class. Views on technology and AI lean toward caution and discomfort, while support for science funding is tilted toward spending too little."
+   },
+   {
+    "name": "Mixed-satisfaction middle-income households",
+    "text": "Here the pattern is one of ambivalent contentment: people describe themselves as pretty happy while being dissatisfied with democracy and with the economy. Financial trajectories are split, some improving and others worsening, but income is usually perceived as average. Taxes feel too high, and social evenings are spread out, with relatives seen more often than non-neighbors. Attitudes toward automation are wary yet not alarmed, and skepticism about how family life suffers from men's work intersects with moderate agreement on technology's benefits."
+   },
+   {
+    "name": "Disengaged, cautious, low-stimulation lives",
+    "text": "This cluster is characterized by low political interest and a sense that daily life is routine rather than exciting. Respondents rarely spend social evenings outside the neighborhood and often see relatives infrequently, and several had to cut back on work for family reasons. They verify political information only occasionally, express little trust in people or institutions, and feel the economy is poor. Their responses on AI and robots tend toward being uncomfortable with machines doing human tasks, while they also think public science spending is inadequate."
+   }
+  ],
+  "variant_stats": [
+   {
+    "name": "Guarded trust with routine social life",
+    "accepted": true,
+    "median_recipe": null,
+    "median_control": null,
+    "n_people": 0,
+    "verified": false
+   },
+   {
+    "name": "Mixed-satisfaction middle-income households",
+    "accepted": true,
+    "median_recipe": null,
+    "median_control": null,
+    "n_people": 0,
+    "verified": false
+   },
+   {
+    "name": "Disengaged, cautious, low-stimulation lives",
+    "accepted": true,
+    "median_recipe": null,
+    "median_control": null,
+    "n_people": 0,
+    "verified": false
+   }
+  ]
+ },
+ {
+  "id": "C3",
+  "round_created": 1,
+  "n_members": 1,
+  "share_of_asked": 0.01,
+  "attempts": 1,
+  "status": "accepted",
+  "variants": [
+   {
+    "name": "Trusting, upbeat, financially secure",
+    "text": "Respondents describe themselves as trusting of others and happy with life, feeling their family finances are stable and above average, while seeing themselves in the upper social tier. They are strongly satisfied with how democracy works, yet they still judge the economy harshly and feel taxes are too high."
+   },
+   {
+    "name": "Pessimistic about economy and technology",
+    "text": "Respondents are optimistic about personal life and family matters but deeply negative about the national economy and strongly skeptical of technology. Their answers pair strong worry about automation and AI with reluctance to delegate tasks to machines, showing a split between personal contentment and broad societal anxiety."
+   },
+   {
+    "name": "Family-centered, exciting life, institution-minded",
+    "text": "Respondents place family at the center, often spending evenings with relatives while seldom socializing with outside friends, and they report that family duties have shaped their work choices. They find life exciting and rate most public institutions as fairly trustworthy, while holding traditional views about gendered work-family tradeoffs."
+   }
+  ],
+  "variant_stats": [
+   {
+    "name": "Trusting, upbeat, financially secure",
+    "accepted": true,
+    "median_recipe": null,
+    "median_control": null,
+    "n_people": 0,
+    "verified": false
+   },
+   {
+    "name": "Pessimistic about economy and technology",
+    "accepted": true,
+    "median_recipe": null,
+    "median_control": null,
+    "n_people": 0,
+    "verified": false
+   },
+   {
+    "name": "Family-centered, exciting life, institution-minded",
+    "accepted": true,
+    "median_recipe": null,
+    "median_control": null,
+    "n_people": 0,
+    "verified": false
+   }
+  ]
+ },
+ {
+  "id": "C4",
+  "round_created": 1,
+  "n_members": 1,
+  "share_of_asked": 0.01,
+  "attempts": 1,
+  "status": "accepted",
+  "variants": [
+   {
+    "name": "Content with system and finances",
+    "text": "These respondents are generally satisfied with how democracy works and with their own financial situation, which they see as improving over recent years. They view the national economy favorably and feel personally happy, though they regard their life as fairly routine rather than exciting. They tend to see their income as well below average yet place themselves at the top of the social ladder, and they want less federal tax."
+   },
+   {
+    "name": "Engaged but socially withdrawn",
+    "text": "These respondents follow politics closely and feel strongly about public affairs, while rarely socializing with friends outside their neighborhood or with extended relatives. Their work responsibilities have led them to scale back on commitments to family, and they hold a neutral view on whether men's work crowds out family life. Their interest in civic matters coexists with a quiet, home-centered or solitary daily life."
+   },
+   {
+    "name": "Contented outlook with public-minded priorities",
+    "text": "These respondents combine a positive personal outlook, feeling happy and seeing their finances as improving, with support for greater public investment, especially in scientific research. They are satisfied with the political system and rate the economy highly, yet still regard their own tax burden as excessive. Their routine-oriented, low-social-activity lifestyle sits alongside confident, upbeat views about the country's direction."
+   }
+  ],
+  "variant_stats": [
+   {
+    "name": "Content with system and finances",
+    "accepted": true,
+    "median_recipe": null,
+    "median_control": null,
+    "n_people": 0,
+    "verified": false
+   },
+   {
+    "name": "Engaged but socially withdrawn",
+    "accepted": true,
+    "median_recipe": null,
+    "median_control": null,
+    "n_people": 0,
+    "verified": false
+   },
+   {
+    "name": "Contented outlook with public-minded priorities",
+    "accepted": true,
+    "median_recipe": null,
+    "median_control": null,
+    "n_people": 0,
+    "verified": false
+   }
+  ]
+ },
+ {
+  "id": "C8",
+  "round_created": 4,
+  "n_members": 12,
+  "share_of_asked": 0.12,
+  "attempts": 1,
+  "status": "accepted",
+  "variants": [
+   {
+    "name": "Distrustful but content, technology-wary",
+    "text": "Respondents combine low trust in institutions and other people with fairly high personal contentment: they feel their finances are improving and they are happy overall, yet they are dissatisfied with how democracy works. Their views on technology are polarized, with strong agreement on some items and disagreement on others, and they tend to see robots and AI as a worry while still wanting more science funding."
+   },
+   {
+    "name": "Comfortable finances, routine social life",
+    "text": "These people report stable or improving money situations and feel their income is at or above average, yet their days feel routine and their social lives are modest, with occasional evenings out with friends and relatives. Politically they follow news closely and verify it, but feel only mildly engaged and quietly dissatisfied, and they hold middling, hedged views on family and work trade-offs."
+   },
+   {
+    "name": "Engaged skeptics on politics and AI",
+    "text": "The pattern centers on active political attention: these respondents check information carefully, are interested in politics, and remain unhappy with the democratic system while trusting institutions only modestly. They hold strongly divided opinions about technology and automation, sometimes uncomfortable with machines taking human tasks, and they consistently favor more public spending on science even when their personal finances look fine."
+   }
+  ],
+  "variant_stats": [
+   {
+    "name": "Distrustful but content, technology-wary",
+    "accepted": true,
+    "median_recipe": null,
+    "median_control": null,
+    "n_people": 0,
+    "verified": false
+   },
+   {
+    "name": "Comfortable finances, routine social life",
+    "accepted": true,
+    "median_recipe": null,
+    "median_control": null,
+    "n_people": 0,
+    "verified": false
+   },
+   {
+    "name": "Engaged skeptics on politics and AI",
+    "accepted": true,
+    "median_recipe": null,
+    "median_control": null,
+    "n_people": 0,
+    "verified": false
+   }
+  ]
+ },
+ {
+  "id": "C9",
+  "round_created": 4,
+  "n_members": 3,
+  "share_of_asked": 0.03,
+  "attempts": 1,
+  "status": "accepted",
+  "variants": [
+   {
+    "name": "Distrustful but content with life",
+    "text": "Simulated respondents distrust other people and nearly all public institutions, yet feel personally settled: they are pretty happy and find life exciting. Their political withdrawal is paired with low interest in news and politics, and they rarely verify information they encounter. Financial satisfaction is moderate and stable. Their suspicion of institutions does not translate into unhappiness with their own lives."
+   },
+   {
+    "name": "Disengaged, socially insular households",
+    "text": "Respondents rarely spend social evenings outside their neighborhood and see relatives only occasionally, while describing their own lives as exciting. They show little curiosity about politics or verification of political facts. Views on technology are mixed, with generally low worry about automation and robots and a clear discomfort with machines performing human tasks. Traditional family roles are endorsed."
+   },
+   {
+    "name": "Financially mixed, skeptical of institutions",
+    "text": "Simulated respondents report a range of financial trajectories, from improving to stagnating, alongside wide variation in self-placed social class and economic judgments. Their attitudes toward taxes and government spending are critical, often favoring less spending on science. Trust in people and institutions runs very low across the board, even among those with comfortable finances, and their democratic dissatisfaction tracks this general wariness rather than personal hardship."
+   }
+  ],
+  "variant_stats": [
+   {
+    "name": "Distrustful but content with life",
+    "accepted": true,
+    "median_recipe": null,
+    "median_control": null,
+    "n_people": 0,
+    "verified": false
+   },
+   {
+    "name": "Disengaged, socially insular households",
+    "accepted": true,
+    "median_recipe": null,
+    "median_control": null,
+    "n_people": 0,
+    "verified": false
+   },
+   {
+    "name": "Financially mixed, skeptical of institutions",
+    "accepted": true,
+    "median_recipe": null,
+    "median_control": null,
+    "n_people": 0,
+    "verified": false
+   }
+  ]
+ }
+]

@@ -1,0 +1,134 @@
+[
+ {
+  "id": "C1",
+  "round_created": 1,
+  "n_members": 19,
+  "share_of_asked": 0.76,
+  "attempts": 1,
+  "status": "accepted",
+  "variants": [
+   {
+    "name": "Guarded trust with routine social life",
+    "text": "These respondents hold low interpersonal trust and low trust in institutions, yet report a generally routine, middling-satisfied outlook. Their social lives are modest and infrequent, with friends outside the neighborhood seen rarely and relatives seen a few times a month. Financial worry sits alongside an average self-assessed income and a self-placement in the working or middle class. Views on technology and AI lean toward caution and discomfort, while support for science funding is tilted toward spending too little."
+   },
+   {
+    "name": "Mixed-satisfaction middle-income households",
+    "text": "Here the pattern is one of ambivalent contentment: people describe themselves as pretty happy while being dissatisfied with democracy and with the economy. Financial trajectories are split, some improving and others worsening, but income is usually perceived as average. Taxes feel too high, and social evenings are spread out, with relatives seen more often than non-neighbors. Attitudes toward automation are wary yet not alarmed, and skepticism about how family life suffers from men's work intersects with moderate agreement on technology's benefits."
+   }
+  ],
+  "variant_stats": [
+   {
+    "name": "Guarded trust with routine social life",
+    "accepted": true,
+    "median_recipe": 0.12986,
+    "median_control": 0.13403,
+    "n_people": 10,
+    "verified": true
+   },
+   {
+    "name": "Mixed-satisfaction middle-income households",
+    "accepted": true,
+    "median_recipe": 0.12951,
+    "median_control": 0.13403,
+    "n_people": 10,
+    "verified": true
+   }
+  ]
+ },
+ {
+  "id": "C2",
+  "round_created": 1,
+  "n_members": 4,
+  "share_of_asked": 0.16,
+  "attempts": 1,
+  "status": "accepted",
+  "variants": [
+   {
+    "name": "Politically engaged skeptics of the system",
+    "text": "These respondents are attentive to politics and verify information online, but they are deeply dissatisfied with how democracy works and rate institutional trust very low. Their financial outlook is negative or stagnant and they see the economy as in bad shape and taxes as too high. Personal life feels routine to them, but their concern centres on the wider system rather than personal circumstances."
+   }
+  ],
+  "variant_stats": [
+   {
+    "name": "Politically engaged skeptics of the system",
+    "accepted": true,
+    "median_recipe": 0.22153,
+    "median_control": 0.25145,
+    "n_people": 10,
+    "verified": true
+   }
+  ]
+ },
+ {
+  "id": "C3",
+  "round_created": 1,
+  "n_members": 1,
+  "share_of_asked": 0.04,
+  "attempts": 1,
+  "status": "accepted",
+  "variants": [
+   {
+    "name": "Trusting, upbeat, financially secure",
+    "text": "Respondents describe themselves as trusting of others and happy with life, feeling their family finances are stable and above average, while seeing themselves in the upper social tier. They are strongly satisfied with how democracy works, yet they still judge the economy harshly and feel taxes are too high."
+   },
+   {
+    "name": "Family-centered, exciting life, institution-minded",
+    "text": "Respondents place family at the center, often spending evenings with relatives while seldom socializing with outside friends, and they report that family duties have shaped their work choices. They find life exciting and rate most public institutions as fairly trustworthy, while holding traditional views about gendered work-family tradeoffs."
+   }
+  ],
+  "variant_stats": [
+   {
+    "name": "Trusting, upbeat, financially secure",
+    "accepted": true,
+    "median_recipe": 0.36591,
+    "median_control": 0.43864,
+    "n_people": 10,
+    "verified": true
+   },
+   {
+    "name": "Family-centered, exciting life, institution-minded",
+    "accepted": true,
+    "median_recipe": 0.35076,
+    "median_control": 0.43864,
+    "n_people": 10,
+    "verified": true
+   }
+  ]
+ },
+ {
+  "id": "C4",
+  "round_created": 1,
+  "n_members": 1,
+  "share_of_asked": 0.04,
+  "attempts": 1,
+  "status": "accepted",
+  "variants": [
+   {
+    "name": "Content with system and finances",
+    "text": "These respondents are generally satisfied with how democracy works and with their own financial situation, which they see as improving over recent years. They view the national economy favorably and feel personally happy, though they regard their life as fairly routine rather than exciting. They tend to see their income as well below average yet place themselves at the top of the social ladder, and they want less federal tax."
+   },
+   {
+    "name": "Contented outlook with public-minded priorities",
+    "text": "These respondents combine a positive personal outlook, feeling happy and seeing their finances as improving, with support for greater public investment, especially in scientific research. They are satisfied with the political system and rate the economy highly, yet still regard their own tax burden as excessive. Their routine-oriented, low-social-activity lifestyle sits alongside confident, upbeat views about the country's direction."
+   }
+  ],
+  "variant_stats": [
+   {
+    "name": "Content with system and finances",
+    "accepted": true,
+    "median_recipe": 0.34722,
+    "median_control": 0.425,
+    "n_people": 10,
+    "verified": true
+   },
+   {
+    "name": "Contented outlook with public-minded priorities",
+    "accepted": true,
+    "median_recipe": 0.38889,
+    "median_control": 0.425,
+    "n_people": 10,
+    "verified": true
+   }
+  ]
+ }
+]

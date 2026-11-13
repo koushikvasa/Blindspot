@@ -1,0 +1,194 @@
+[
+ {
+  "id": "C1",
+  "round_created": 1,
+  "n_members": 22,
+  "share_of_asked": 0.88,
+  "attempts": 1,
+  "status": "accepted",
+  "variants": [
+   {
+    "name": "Anxious tech skeptics, wary of others",
+    "text": "These respondents combine guarded trust in people with low confidence in institutions and mounting unease about automation. They tend to rate robots and AI as uncomfortable or worrying, while still holding a generally satisfied view of how democracy works. Their answers on social trust, institutional trust, and technology cluster together, forming a cautious, skeptical outlook that is not outright pessimistic about daily life."
+   },
+   {
+    "name": "Content middle-class, routine-leaning family people",
+    "text": "These respondents describe their finances as stable, their life as fairly routine, and their happiness as high, with family and social contact fairly frequent. Views on the economy and taxes often run negative while personal finances feel steady, so they separate private contentment from public gloom. Their answers on social life, work-family tension, and personal satisfaction move together, showing a settled, family-centred orientation."
+   },
+   {
+    "name": "Politically detached yet trusting realists",
+    "text": "These respondents show low to moderate political interest and mixed satisfaction with democratic processes, while often verifying political information online. Their trust in others and their views on technology lean toward the middle or mildly positive, with few extreme ratings. Answers on civic engagement, economic outlook, and emerging technology tend to hover around neutral, producing a measured but noncommittal profile."
+   }
+  ],
+  "variant_stats": [
+   {
+    "name": "Anxious tech skeptics, wary of others",
+    "accepted": true,
+    "median_recipe": 0.13056,
+    "median_control": 0.15486,
+    "n_people": 10,
+    "verified": true
+   },
+   {
+    "name": "Content middle-class, routine-leaning family people",
+    "accepted": true,
+    "median_recipe": 0.14097,
+    "median_control": 0.15486,
+    "n_people": 10,
+    "verified": true
+   },
+   {
+    "name": "Politically detached yet trusting realists",
+    "accepted": true,
+    "median_recipe": 0.13261,
+    "median_control": 0.15486,
+    "n_people": 10,
+    "verified": true
+   }
+  ]
+ },
+ {
+  "id": "C2",
+  "round_created": 1,
+  "n_members": 1,
+  "share_of_asked": 0.04,
+  "attempts": 1,
+  "status": "accepted",
+  "variants": [
+   {
+    "name": "Distrustful, discontented, financially strained",
+    "text": "Respondents sit at the low end of trust in people and institutions, and feel pessimistic about the economy and their finances. They describe their finances as worsening and far below average, and are dissatisfied with how American democracy works. Their wariness is paired with heavy engagement: they actively verify political information online and follow politics closely, even while their daily life feels routine and only moderately happy."
+   },
+   {
+    "name": "Politically engaged yet unhappy",
+    "text": "These people follow politics very closely and verify what they read, yet their outlook on life is flat rather than energized. Routine days, a sense of not being too happy, and a middle-class self-placement sit alongside strong frustration with the economy and the tax burden. They keep social ties mostly local and family-based, and their tech attitudes lean toward comfort with automation paired with a wish for more science funding."
+   },
+   {
+    "name": "Comfortable with tech, wary of people",
+    "text": "A distinctive split runs through these answers: deep comfort with robots and AI and a pro-science stance, combined with low trust in other people and in institutions. Life feels routine and family-centered rather than exciting, with social evenings mostly with relatives or nearby friends. Their views on gender and work-family roles are firmly egalitarian, and they hold a clearly negative view of current economic conditions."
+   }
+  ],
+  "variant_stats": [
+   {
+    "name": "Distrustful, discontented, financially strained",
+    "accepted": true,
+    "median_recipe": 0.3072,
+    "median_control": 0.34271,
+    "n_people": 10,
+    "verified": true
+   },
+   {
+    "name": "Politically engaged yet unhappy",
+    "accepted": true,
+    "median_recipe": 0.32361,
+    "median_control": 0.34271,
+    "n_people": 10,
+    "verified": true
+   },
+   {
+    "name": "Comfortable with tech, wary of people",
+    "accepted": true,
+    "median_recipe": 0.28874,
+    "median_control": 0.34271,
+    "n_people": 10,
+    "verified": true
+   }
+  ]
+ },
+ {
+  "id": "C3",
+  "round_created": 1,
+  "n_members": 1,
+  "share_of_asked": 0.04,
+  "attempts": 1,
+  "status": "accepted",
+  "variants": [
+   {
+    "name": "Disengaged, financially strained, routine lives",
+    "text": "Respondents feel their finances are stuck below average and unchanged, tend to see the economy as poor and taxes as too heavy, and describe life as routine rather than exciting. They are not very happy overall, yet they are only moderately satisfied with their finances, so their dissatisfaction is mild rather than acute. Political interest is absent, and they rarely check political claims, so their outlook on public affairs is passive and detached."
+   },
+   {
+    "name": "Withdrawn social life, wary of technology",
+    "text": "Respondents socialize occasionally with friends outside their neighborhood but seldom see relatives, and they do not report family sacrifices at work. Their views lean toward traditional family expectations about men's work. On technology they are neutral in general but express strong worry about artificial intelligence and rate automation of many human tasks at middling-to-moderate levels, which together suggest guarded, uneasy modernity."
+   },
+   {
+    "name": "Skeptical of spending, unsure of progress",
+    "text": "Respondents combine a neutral stance on technology with real unease about AI and a belief that science receives too much public money. Their financial self-assessment is steady rather than improving, and they see their social standing as working class. Taken together, the answers form a picture of people who feel stuck, distrust large institutions and expensive ambitions, and do not expect things to get better soon."
+   }
+  ],
+  "variant_stats": [
+   {
+    "name": "Disengaged, financially strained, routine lives",
+    "accepted": true,
+    "median_recipe": 0.28167,
+    "median_control": 0.30292,
+    "n_people": 10,
+    "verified": true
+   },
+   {
+    "name": "Withdrawn social life, wary of technology",
+    "accepted": true,
+    "median_recipe": 0.28833,
+    "median_control": 0.30292,
+    "n_people": 10,
+    "verified": true
+   },
+   {
+    "name": "Skeptical of spending, unsure of progress",
+    "accepted": true,
+    "median_recipe": 0.27083,
+    "median_control": 0.30292,
+    "n_people": 10,
+    "verified": true
+   }
+  ]
+ },
+ {
+  "id": "C4",
+  "round_created": 1,
+  "n_members": 1,
+  "share_of_asked": 0.04,
+  "attempts": 1,
+  "status": "accepted",
+  "variants": [
+   {
+    "name": "Distrustful, disengaged, financially strained",
+    "text": "Respondents show low trust in institutions and dissatisfaction with how democracy works, paired with little interest in politics. They feel their finances are strained and the economy is poor, yet see their own situation as modestly improving. They rarely socialize with friends outside the neighborhood or with relatives, and describe life as routine rather than exciting."
+   },
+   {
+    "name": "Wary of tech, pro-science, withdrawn",
+    "text": "These people are cautious about artificial intelligence and robots, feeling quite uneasy about machines performing human tasks, while being mixed rather than hostile toward technology overall. They favor more public spending on scientific research and sit on the fence about technology's benefits. Their social lives are narrow, with little time spent with friends or family outside work."
+   },
+   {
+    "name": "Working-class, unhappy, tax-averse",
+    "text": "Respondents place themselves in the working class and judge their family income as below average, with a sense that the country's economy is doing badly. They feel taxes are too low rather than too high, and they are not too happy overall. Their answers combine low political engagement and low satisfaction with democracy with a steady, unexciting daily routine and very limited social contact."
+   }
+  ],
+  "variant_stats": [
+   {
+    "name": "Distrustful, disengaged, financially strained",
+    "accepted": true,
+    "median_recipe": 0.37063,
+    "median_control": 0.41071,
+    "n_people": 10,
+    "verified": true
+   },
+   {
+    "name": "Wary of tech, pro-science, withdrawn",
+    "accepted": true,
+    "median_recipe": 0.37778,
+    "median_control": 0.41071,
+    "n_people": 10,
+    "verified": true
+   },
+   {
+    "name": "Working-class, unhappy, tax-averse",
+    "accepted": true,
+    "median_recipe": 0.30476,
+    "median_control": 0.41071,
+    "n_people": 10,
+    "verified": true
+   }
+  ]
+ }
+]

@@ -18,7 +18,7 @@ The web app reads JSON files from `results/ui/`. If a file is missing, the API s
   }
 }
 ```
-Crowd keys used by the UI (any subset may be present): `retest, other_real_people, gaussian_copula, independent_marginals, claude_mode, claude_sampled, gpt41mini_twin`.
+Crowd keys used by the UI (any subset may be present): `retest, other_real_people, gaussian_copula, independent_marginals, flashpoint_panel, claude_mode, claude_sampled, gpt41mini_twin`. Each crowd may add `"n"` and `"items"` (e.g. Flashpoint is n=200 on the 20 live items).
 
 ## `map_{dataset}_{crowd}.json`
 ```json
@@ -27,22 +27,6 @@ Crowd keys used by the UI (any subset may be present): `retest, other_real_peopl
  "synthetic": [[x, y], ...]}
 ```
 `covered01` is 1 if that real person is covered by this crowd (k = 5 rule), else 0. Real points are in the same order in every file of a dataset.
-
-## `agent_gss.json`
-```json
-{"method": "blindspot_verified", "seed": 42,
- "rounds": [
-   {"round": 0, "asked": 0, "coverage": 0.638, "map": "map_gss_agent_r0.json",
-    "gaps": []},
-   {"round": 1, "asked": 25, "coverage": 0.66, "map": "map_gss_agent_r1.json",
-    "gaps": [{"id": "g1", "name": "Distrustful economic pessimists",
-              "summary": "One short sentence about the answer pattern.",
-              "size": 6, "status": "learned",
-              "recipes_tried": 3, "recipes_accepted": 1,
-              "recruited": 0, "observed_rate": null}]}
- ]}
-```
-`status` is one of `learned` (a recipe was accepted), `rejected` (recipes tried, none accepted yet), `cannot_imagine` (escalated; `recruited` = real people asked for this gap, `observed_rate` = the uncovered rate in the segment that triggered it, from data). **No demographic labels or model-written demographic reasons in this file.**
 
 ## `scoreboard_gss.json`
 ```json
@@ -64,3 +48,28 @@ Crowd keys used by the UI (any subset may be present): `retest, other_real_peopl
  "base_rate_uncovered": 0.34}
 ```
 Values are encoded answers in [0, 1] (`index / (k-1)`) or null, in the item order given. `real` is the GSS test split restricted to the live items. Item weights inside a family are equal; families are weighted by `family_weights` (equal by default).
+
+## `repairs_gss.json` (scene "We tried five ways")
+```json
+{"baseline": 0.608,
+ "items": [{"label": "Pick best of 50 AI drafts", "coverage": 0.765, "lo": 0.74, "hi": 0.79,
+            "kind": "ai_filtered", "note": "100 real people as filter"}],
+ "caption": "One plain sentence from the numbers."}
+```
+`kind`: `ai` (no real data), `ai_filtered` (AI output steered or filtered with real people), `hybrid` (includes real respondents), `real` (built from real people). Order = display order (top to bottom). `lo`/`hi` optional (seed range or CI). `note` says anything that makes a row not directly comparable (different item set, crowd size, number of real people used).
+
+## `fairness_gss.json` (scene "Who is missed")
+```json
+{"overall": 0.608,
+ "groups": [{"dimension": "Household income", "label": "Under $30k", "n": 64, "coverage": 0.47, "lo": 0.36, "hi": 0.58}],
+ "caption": "One plain sentence; say clearly if intervals overlap."}
+```
+Only groups with n ≥ 30. These are factual coverage rates by group from data, not model-written claims.
+
+## `realrecruit_gss.json` (scene "Real people", optional)
+Only written once real Flashpoint respondents exist. If absent, the scene shows a "recruiting" message (no sample data is ever shown here).
+```json
+{"n": 50, "provider": "Prolific", "cost_usd": 188.12,
+ "coverage_before": 0.608, "coverage_after": 0.85, "method": "statistics fitted on recruits, reweighted",
+ "caption": "One plain sentence, including how this compares with 50 random pool people."}
+```

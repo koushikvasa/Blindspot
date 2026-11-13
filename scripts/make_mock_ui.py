@@ -40,6 +40,7 @@ summary = {
             "independent_marginals": crowd(0.740, [0.701, 0.788], 0.778, [0.722, 0.826], "Shuffled answers"),
             "claude_mode": crowd(0.638, [0.581, 0.698], 0.997, [0.988, 1.000], "Claude, typical answers"),
             "claude_sampled": crowd(0.371, [0.326, 0.413], 0.521, [0.461, 0.575], "Claude, random answers"),
+            "flashpoint_panel": crowd(0.611, [0.554, 0.671], 0.765, [0.695, 0.815], "Flashpoint synthetic panel"),
         }},
     },
 }
@@ -105,44 +106,51 @@ for dataset in ("twin", "gss"):
     if dataset == "gss":
         gss_real = real
 
-# ---------- sample agent rounds (GSS) ----------
-gap_names = [
-    ("Distrustful economic pessimists", "Low trust in institutions together with a gloomy view of the economy and their own finances."),
-    ("Content but disengaged", "Satisfied with life and finances, little interest in politics, neutral on technology."),
-    ("Tech-wary optimists", "Happy and socially active, but uneasy about AI, driverless cars and robot surgery."),
-    ("Squeezed and sceptical", "Feels worse off than last year and doubts that technology helps people like them."),
-]
-rounds, covs = [], [0.638, 0.69, 0.75, 0.80, 0.84]
-for r, target in enumerate(covs):
-    syn = synth(gss_real, target, "collapsed" if r == 0 else "spread")
-    write_map("gss", f"agent_r{r}", gss_real, syn, target)
-    gaps = []
-    for g, (name, summ) in enumerate(gap_names[: r]):
-        status = "learned" if g in (0, 1) else ("cannot_imagine" if g == 2 else ("learned" if r >= 4 else "rejected"))
-        gaps.append({"id": f"g{g + 1}", "name": name, "summary": summ, "size": int(4 + 3 * g + r),
-                     "status": status, "recipes_tried": 3 if status != "cannot_imagine" else 6,
-                     "recipes_accepted": 1 if status == "learned" else 0,
-                     "recruited": 12 if status == "cannot_imagine" else 0,
-                     "observed_rate": 0.41 if status == "cannot_imagine" else None})
-    rounds.append({"round": r, "asked": 25 * r, "coverage": target, "map": f"map_gss_agent_r{r}.json", "gaps": gaps})
-dump("agent_gss.json", {"method": "blindspot_verified", "seed": 42, "rounds": rounds})
-
-# ---------- scoreboard: real H4 (Experiment 2) numbers ----------
+# ---------- scoreboard: real H4d numbers (GSS, 20 live items, test, 10 seeds; seed ranges not exported here) ----------
 dump("scoreboard_gss.json", {
     "budgets": [25, 50, 75, 100],
     "methods": {
-        "blindspot_targeted": {"label": "Blindspot (H4)", "mean": [0.641, 0.662, 0.655, 0.656],
-                                "lo": [0.638, 0.647, 0.638, 0.647], "hi": [0.647, 0.677, 0.674, 0.671]},
-        "blindspot_random": {"label": "Blindspot, random asking", "mean": [0.641, 0.652, 0.648, 0.659],
-                              "lo": [0.638, 0.635, 0.632, 0.635], "hi": [0.647, 0.662, 0.680, 0.671]},
-        "copula_on_asked": {"label": "Statistics on asked people", "mean": [0.764, 0.848, 0.829, 0.834],
-                             "lo": [0.716, 0.808, 0.808, 0.826], "hi": [0.817, 0.868, 0.841, 0.841]},
-        "claude_plus_asked": {"label": "Claude + asked people", "mean": [0.721, 0.818, 0.853, 0.895],
-                               "lo": [0.698, 0.814, 0.835, 0.880], "hi": [0.734, 0.823, 0.862, 0.907]},
+        "copula_on_asked": {"label": "Statistics on the real people", "mean": [0.815, 0.868, 0.885, 0.893],
+                             "lo": [0.815, 0.868, 0.885, 0.893], "hi": [0.815, 0.868, 0.885, 0.893]},
+        "claude_plus_asked": {"label": "AI crowd + the real people", "mean": [0.724, 0.799, 0.840, 0.888],
+                               "lo": [0.724, 0.799, 0.840, 0.888], "hi": [0.724, 0.799, 0.840, 0.888]},
+        "blindspot_select_fp": {"label": "AI drafts filtered by them (+Flashpoint)", "mean": [0.771, 0.783, 0.807, 0.830],
+                                 "lo": [0.771, 0.783, 0.807, 0.830], "hi": [0.771, 0.783, 0.807, 0.830]},
+        "blindspot_select": {"label": "AI drafts filtered by them", "mean": [0.699, 0.698, 0.750, 0.765],
+                              "lo": [0.699, 0.698, 0.750, 0.765], "hi": [0.699, 0.698, 0.750, 0.765]},
     },
-    "references": {"claude_mode": {"label": "Claude alone", "value": 0.638},
-                   "other_real_people": {"label": "Real people ceiling", "value": 0.961}},
-    "caption": "In the first agent design, adding the asked real people beat learned recipes at every budget.",
+    "references": {"claude_mode": {"label": "AI crowd alone", "value": 0.608},
+                   "other_real_people": {"label": "Real people ceiling", "value": 0.967}},
+    "caption": "Statistics fitted on just 25 real people (82%) beat every AI-based method, even when the AI used 100 real people as a filter.",
+})
+
+# ---------- repairs: real numbers from bakeoff1, H4/H4b, H4d, experiment FP ----------
+dump("repairs_gss.json", {
+    "baseline": 0.608,
+    "items": [
+        {"label": "Random answers from Claude", "coverage": 0.473, "kind": "ai"},
+        {"label": "Flashpoint synthetic panel", "coverage": 0.611, "kind": "ai", "note": "n=200"},
+        {"label": "Teach Claude archetypes (v1)", "coverage": 0.656, "kind": "ai_filtered", "note": "24 items, 100 real people"},
+        {"label": "Teach Claude verified recipes (v2)", "coverage": 0.614, "kind": "ai_filtered", "note": "24 items, 100 real people"},
+        {"label": "Pick best of 50 AI drafts", "coverage": 0.765, "kind": "ai_filtered", "note": "100 real people as filter"},
+        {"label": "Pick best drafts + Flashpoint", "coverage": 0.830, "kind": "ai_filtered", "note": "100 real people as filter"},
+        {"label": "25 real people + statistics", "coverage": 0.815, "kind": "real"},
+        {"label": "100 real people + statistics", "coverage": 0.893, "kind": "real"},
+    ],
+    "caption": "Every AI-based repair stayed below a simple model fitted on 25 real people. Scored on GSS test people none of the methods saw.",
+})
+
+# ---------- fairness: SAMPLE (partial real values, no CIs; H8 exports the full table) ----------
+dump("fairness_gss.json", {
+    "overall": 0.638,
+    "groups": [
+        {"dimension": "Household income", "label": "Under $30k", "coverage": 0.47, "lo": None, "hi": None, "n": None},
+        {"dimension": "Household income", "label": "$110k and over", "coverage": 0.80, "lo": None, "hi": None, "n": None},
+        {"dimension": "Gender", "label": "Women", "coverage": 0.59, "lo": None, "hi": None, "n": None},
+        {"dimension": "Gender", "label": "Men", "coverage": 0.70, "lo": None, "hi": None, "n": None},
+        {"dimension": "Education", "label": "Graduate degree", "coverage": 0.80, "lo": None, "hi": None, "n": None},
+    ],
+    "caption": "Share of each group the AI crowd can imagine. Groups of 30+ people; many intervals overlap, so read this as a pattern, not proof.",
 })
 
 # ---------- sample live items ----------

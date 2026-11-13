@@ -1,7 +1,7 @@
 (async () => {
   const { load, pct, countTo, markSample } = window.BS;
   const $ = (id) => document.getElementById(id);
-  const CROWD_ORDER = ["retest", "other_real_people", "gaussian_copula", "independent_marginals", "claude_mode", "claude_sampled", "gpt41mini_twin"];
+  const CROWD_ORDER = ["retest", "other_real_people", "gaussian_copula", "independent_marginals", "flashpoint_panel", "claude_mode", "claude_sampled", "gpt41mini_twin"];
   const mapCache = {};
 
   async function map(name) {
@@ -69,54 +69,51 @@
   renderDs();
   await setCrowd(defaultCrowd());
 
-  // ---------- scene 3: typical vs random ----------
+  // ---------- scene 3: three failure modes ----------
   const dsDuo = summary.datasets.gss?.crowds?.claude_sampled ? "gss" : "twin";
-  const mMode = new Constellation($("mapModeC"), { pad: 18 });
-  const mSamp = new Constellation($("mapSampC"), { pad: 18 });
-  const cm = summary.datasets[dsDuo].crowds.claude_mode, cs = summary.datasets[dsDuo].crowds.claude_sampled;
-  if (cm && cs) {
-    $("capMode").innerHTML = `missed <b>${pct(1 - cm.coverage)}</b> · realistic <b>${pct(cm.precision)}</b>`;
-    $("capSamp").innerHTML = `missed <b>${pct(1 - cs.coverage)}</b> · realistic <b>${pct(cs.precision)}</b>`;
-    map(`map_${dsDuo}_claude_mode`).then((d) => mMode.set(d)).catch(() => {});
-    map(`map_${dsDuo}_claude_sampled`).then((d) => mSamp.set(d)).catch(() => {});
+  const crowdsDuo = summary.datasets[dsDuo].crowds;
+  const cap = (el, c) => { if (c) $(el).innerHTML = `missed <b>${pct(1 - c.coverage)}</b> · realistic <b>${pct(c.precision)}</b>`; };
+  const trioMaps = [["mapModeC", "claude_mode", "capMode"], ["mapSampC", "claude_sampled", "capSamp"], ["mapFpC", "flashpoint_panel", "capFp"]];
+  for (const [canvas, key, capId] of trioMaps) {
+    const c = crowdsDuo[key];
+    if (!c) { if (key === "flashpoint_panel") $("fpCol").style.display = "none"; continue; }
+    cap(capId, c);
+    const m = new Constellation($(canvas), { pad: 16 });
+    map(`map_${dsDuo}_${key}`).then((d) => m.set(d)).catch(() => {});
   }
 
-  // ---------- scene 4: agent rounds ----------
-  const agentMap = new Constellation($("mapAgent"));
-  let agent = null, round = 0;
-  try { const r = await load("agent_gss"); markSample(r.mock); agent = r.data; } catch (_) {}
-  const STATUS = { learned: "learned", rejected: "not yet", cannot_imagine: "can't imagine: asking people" };
+  // ---------- scene 4: repair attempts ----------
+  try {
+    const r = await load("repairs_gss"); markSample(r.mock);
+    drawRepairs(r.data);
+  } catch (_) { $("repairs").innerHTML = '<div class="empty">Repair results not exported yet.</div>'; }
 
-  async function setRound(r) {
-    if (!agent) return;
-    round = Math.max(0, Math.min(agent.rounds.length - 1, r));
-    const R = agent.rounds[round];
-    $("roundSlider").value = round; $("roundNum").textContent = round;
-    $("roundLabel").textContent = round === 0 ? "Round 0: AI crowd only" : `Round ${round}`;
-    countTo($("agentCov"), R.coverage);
-    countTo($("agentAsked"), R.asked, (v) => Math.round(v).toString());
-    const box = $("gaps");
-    box.innerHTML = "";
-    if (!R.gaps.length) box.innerHTML = '<div class="empty">Round 0: the plain AI crowd, before asking anyone.</div>';
-    for (const g of R.gaps) {
-      const el = document.createElement("div");
-      el.className = "gap";
-      const meta = g.status === "cannot_imagine"
-        ? `${g.recipes_tried} recipes tried, none worked · recruited ${g.recruited} real people` + (g.observed_rate != null ? ` · ${pct(g.observed_rate)} missed in that group` : "")
-        : `${g.size} people · ${g.recipes_accepted}/${g.recipes_tried} recipes passed verification`;
-      el.innerHTML = `<div class="top"><span class="name"></span><span class="status ${g.status}">${STATUS[g.status] || g.status}</span></div>
-        <div class="summary"></div><div class="meta">${meta}</div>`;
-      el.querySelector(".name").textContent = g.name;
-      el.querySelector(".summary").textContent = g.summary || "";
-      box.appendChild(el);
+  function drawRepairs(d) {
+    const rows = d.items, W = 1100, rowH = 40, L = 360, R = 90, T = 30, H = T + rows.length * rowH + 30;
+    const x = (v) => L + v * (W - L - R);
+    const col = { ai: "#2DD4BF", ai_filtered: "#7FE3D6", hybrid: "#C9B6FF", real: "#E8ECF5" };
+    let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Coverage of each repair attempt">`;
+    for (let v = 0; v <= 1.0001; v += 0.2) {
+      s += `<line x1="${x(v)}" x2="${x(v)}" y1="${T - 10}" y2="${H - 24}" stroke="rgba(232,236,245,.07)"/>`;
+      s += `<text x="${x(v)}" y="${H - 6}" text-anchor="middle">${Math.round(v * 100)}%</text>`;
     }
-    try { agentMap.set(await map(R.map.replace(/\.json$/, ""))); } catch (_) {}
+    if (d.baseline != null) {
+      s += `<line x1="${x(d.baseline)}" x2="${x(d.baseline)}" y1="${T - 14}" y2="${H - 24}" stroke="#FF7A59" stroke-dasharray="4 5"/>`;
+      s += `<text x="${x(d.baseline) + 6}" y="${T - 16}" style="fill:#FF7A59">AI alone ${pct(d.baseline)}</text>`;
+    }
+    rows.forEach((it, i) => {
+      const y = T + i * rowH + 8, c = col[it.kind] || "#9AA3B8";
+      s += `<text x="${L - 14}" y="${y + 14}" text-anchor="end" style="fill:${it.kind === "real" ? "#E8ECF5" : "#C7CDDB"};font-size:14px">${esc(it.label)}</text>`;
+      s += `<rect x="${x(0)}" y="${y}" width="${Math.max(2, x(it.coverage) - x(0))}" height="22" rx="4" fill="${c}" opacity="${it.kind === "real" ? 0.95 : 0.8}"/>`;
+      if (it.lo != null && it.hi != null) s += `<line x1="${x(it.lo)}" x2="${x(it.hi)}" y1="${y + 11}" y2="${y + 11}" stroke="#070B16" stroke-width="2"/>`;
+      s += `<text x="${x(it.coverage) + 8}" y="${y + 15}" style="fill:#E8ECF5;font-size:13px">${pct(it.coverage)}${it.note ? `  ·  ${esc(it.note)}` : ""}</text>`;
+    });
+    s += "</svg>";
+    $("repairs").innerHTML = s;
+    $("repairsCaption").textContent = d.caption || "";
   }
-  if (agent) {
-    $("roundSlider").max = agent.rounds.length - 1;
-    $("roundSlider").oninput = (e) => setRound(+e.target.value);
-    setRound(0);
-  }
+
+  function esc(t) { return String(t).replace(/[&<>"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch])); }
 
   // ---------- scene 5: scoreboard ----------
   try {
@@ -162,6 +159,60 @@
     $("chartCaption").textContent = sb.caption || "";
   }
 
+  // ---------- scene 6: who is missed ----------
+  try {
+    const r = await load("fairness_gss"); markSample(r.mock);
+    drawFairness(r.data);
+  } catch (_) { $("fairness").innerHTML = '<div class="empty">Group results not exported yet.</div>'; }
+
+  function drawFairness(d) {
+    const groups = d.groups, W = 1100, rowH = 30, L = 300, R = 120, T = 20;
+    const dims = [...new Set(groups.map((g) => g.dimension))];
+    const H = T + groups.length * rowH + dims.length * 18 + 34;
+    const x = (v) => L + ((v - 0.3) / 0.7) * (W - L - R);
+    let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="AI crowd coverage by group">`;
+    for (let v = 0.3; v <= 1.0001; v += 0.1) {
+      s += `<line x1="${x(v)}" x2="${x(v)}" y1="${T}" y2="${H - 26}" stroke="rgba(232,236,245,.07)"/>`;
+      s += `<text x="${x(v)}" y="${H - 8}" text-anchor="middle">${Math.round(v * 100)}%</text>`;
+    }
+    if (d.overall != null) {
+      s += `<line x1="${x(d.overall)}" x2="${x(d.overall)}" y1="${T}" y2="${H - 26}" stroke="#9AA3B8" stroke-dasharray="4 5"/>`;
+      s += `<text x="${x(d.overall) + 6}" y="${T + 10}" style="fill:#9AA3B8">overall ${pct(d.overall)}</text>`;
+    }
+    let y = T + 8;
+    for (const dim of dims) {
+      s += `<text x="${L - 14}" y="${y + 6}" text-anchor="end" style="fill:#6B748A;font-size:12px">${esc(dim)}</text>`;
+      y += 18;
+      for (const g of groups.filter((g) => g.dimension === dim)) {
+        const low = d.overall != null && g.coverage < d.overall - 0.05;
+        const c = low ? "#FF7A59" : "#E8ECF5";
+        s += `<text x="${L - 14}" y="${y + 5}" text-anchor="end" style="fill:#C7CDDB;font-size:14px">${esc(g.label)}</text>`;
+        if (g.lo != null && g.hi != null) s += `<line x1="${x(g.lo)}" x2="${x(g.hi)}" y1="${y}" y2="${y}" stroke="${c}" stroke-opacity=".5" stroke-width="2"/>`;
+        s += `<circle cx="${x(g.coverage)}" cy="${y}" r="6" fill="${c}"/>`;
+        s += `<text x="${x(1) + 14}" y="${y + 5}" style="font-size:13px">${pct(g.coverage)}${g.n ? `  n=${g.n}` : ""}</text>`;
+        y += rowH;
+      }
+    }
+    s += "</svg>";
+    $("fairness").innerHTML = s;
+    $("fairnessCaption").textContent = d.caption || "";
+  }
+
+  // ---------- scene 7: real people through Flashpoint ----------
+  try {
+    const r = await load("realrecruit_gss");
+    if (r.mock) throw new Error("no sample data for real recruitment");
+    const d = r.data;
+    $("realBody").innerHTML = `
+      <div class="card"><div class="stat miss num">${pct(d.coverage_before)}</div><div class="stat-label">covered by the AI crowd alone</div></div>
+      <div class="card"><div class="stat num">${d.n}</div><div class="stat-label">real people recruited via Flashpoint (${esc(d.provider)})${d.cost_usd ? `, $${d.cost_usd}` : ""}</div></div>
+      <div class="card"><div class="stat syn num">${pct(d.coverage_after)}</div><div class="stat-label">covered after Blindspot's fix${d.method ? ` (${esc(d.method)})` : ""}</div></div>`;
+    if (d.caption) $("realBody").insertAdjacentHTML("afterend", `<p class="lede">${esc(d.caption)}</p>`);
+  } catch (_) {
+    document.querySelector("#realScene h2").textContent = "Next: real people, recruited through Flashpoint.";
+    $("realBody").outerHTML = `<p class="pending">Real respondents are being recruited through Flashpoint today. When their answers arrive, Blindspot fits its repair on them and re-scores the crowd against the national survey.</p>`;
+  }
+
   // ---------- scene 6: QR ----------
   const params = new URLSearchParams(location.search);
   const joinUrl = params.get("join") || `${location.origin}/join`;
@@ -194,8 +245,7 @@
     else if (["ArrowUp", "PageUp"].includes(e.key)) { e.preventDefault(); go(cur - 1); }
     else if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
       const d = e.key === "ArrowRight" ? 1 : -1;
-      if (name === "Agent") setRound(round + d);
       if (name === "Constellation") { const list = crowdsOf(ds); setCrowd(list[(list.indexOf(crowd) + d + list.length) % list.length]); }
-    } else if (e.key === "r" || e.key === "R") { setRound(0); go(0); }
+    } else if (e.key === "r" || e.key === "R") { go(0); }
   });
 })();

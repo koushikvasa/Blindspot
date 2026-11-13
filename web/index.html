@@ -10,7 +10,7 @@
 <body>
 <div class="brand"><span class="dot"></span>Blindspot</div>
 <nav class="pager" id="pager" aria-label="Scenes"></nav>
-<div class="hint"><kbd>↑</kbd> <kbd>↓</kbd> scenes &nbsp; <kbd>←</kbd> <kbd>→</kbd> crowds and rounds</div>
+<div class="hint"><kbd>↑</kbd> <kbd>↓</kbd> scenes &nbsp; <kbd>←</kbd> <kbd>→</kbd> switch crowds</div>
 
 <main class="story" id="story">
 
@@ -50,48 +50,44 @@
     </div>
   </section>
 
-  <section class="scene" data-name="Randomness">
-    <p class="eyebrow">The obvious fix does not work</p>
-    <h2>Typical answers are too alike. Random answers are nobody.</h2>
-    <div class="duo">
-      <div>
-        <div class="mapbox"><canvas id="mapModeC"></canvas></div>
+  <section class="scene" data-name="Failure modes">
+    <p class="eyebrow">Three AI crowds, three ways to miss people</p>
+    <h2>Too alike, incoherent, or plausible but wrongly combined.</h2>
+    <div class="trio" id="trio">
+      <div><div class="mapbox"><canvas id="mapModeC"></canvas></div>
         <div class="cap"><h3>Claude, typical answers</h3><div class="nums" id="capMode"></div></div>
-      </div>
-      <div>
-        <div class="mapbox"><canvas id="mapSampC"></canvas></div>
+        <p class="capnote">Every person looks real. They all look alike.</p></div>
+      <div><div class="mapbox"><canvas id="mapSampC"></canvas></div>
         <div class="cap"><h3>Claude, random answers</h3><div class="nums" id="capSamp"></div></div>
-      </div>
+        <p class="capnote">The right spread of answers, in combinations nobody gives.</p></div>
+      <div id="fpCol"><div class="mapbox"><canvas id="mapFpC"></canvas></div>
+        <div class="cap"><h3>Flashpoint synthetic panel</h3><div class="nums" id="capFp"></div></div>
+        <p class="capnote">Spread like real people, stable run to run, still combined like shuffled answers.</p></div>
     </div>
-    <p class="lede">Sampling from the model's own probabilities restores the spread of answers, but not which answers belong together in one person.</p>
   </section>
 
-  <section class="scene" data-name="Agent">
-    <p class="eyebrow">Blindspot at work on GSS 2024</p>
-    <h2>Find the gap. Try to imagine it. If you can't, go ask the right people.</h2>
-    <div class="split">
-      <div class="mapbox"><canvas id="mapAgent"></canvas></div>
-      <div class="side">
-        <div class="card">
-          <h3 id="roundLabel">Round 0</h3>
-          <div class="rounds"><input type="range" id="roundSlider" min="0" max="0" value="0" aria-label="Round"><span class="num" id="roundNum">0</span></div>
-        </div>
-        <div class="card stats">
-          <div><div class="stat syn num" id="agentCov">–</div><div class="stat-label">real people covered</div></div>
-          <div><div class="stat num" id="agentAsked">0</div><div class="stat-label">real people asked</div></div>
-        </div>
-        <div class="card">
-          <h3>Gaps found</h3>
-          <div class="gaps" id="gaps"><div class="empty">Round 0: the plain AI crowd, before asking anyone.</div></div>
-        </div>
-      </div>
-    </div>
+  <section class="scene" data-name="Repairs">
+    <p class="eyebrow">Can the AI learn to imagine the people it misses?</p>
+    <h2>We tried five ways. A few real people beat all of them.</h2>
+    <div class="chart"><div id="repairs"></div><p class="caption" id="repairsCaption"></p></div>
   </section>
 
   <section class="scene" data-name="Scoreboard">
-    <p class="eyebrow">Same number of real people asked. Test people the agent never saw.</p>
-    <h2>The honest scoreboard</h2>
+    <p class="eyebrow">Same number of real people. Scored on people nobody trained on.</p>
+    <h2>How many real people do you need?</h2>
     <div class="chart"><div id="chart"></div><p class="caption" id="chartCaption"></p></div>
+  </section>
+
+  <section class="scene" data-name="Who is missed">
+    <p class="eyebrow">Who the AI crowd misses</p>
+    <h2>The misses are not random.</h2>
+    <div class="chart"><div id="fairness"></div><p class="caption" id="fairnessCaption"></p></div>
+  </section>
+
+  <section class="scene" data-name="Real people" id="realScene">
+    <p class="eyebrow">Seeking answers from the right people, for real</p>
+    <h2>Blindspot asked real people through Flashpoint.</h2>
+    <div class="realwrap" id="realBody"></div>
   </section>
 
   <section class="scene" data-name="Join">

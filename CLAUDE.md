@@ -4,7 +4,7 @@
 An agent that audits synthetic survey respondents against real ones, finds uncovered real people, and learns to cover them. Python backend (`blindspot/`), Next.js UI later (`web/`). Read `docs/PLAN.md` first.
 
 ## Rules that never bend
-1. **Splits are sacred.** Real respondents are split once (seeded) into `pool` (agent may request from), `test` (used for round-by-round scores), `holdout` (headline number, touched only by `eval/final.py`). No code path may read `test` or `holdout` rows into a generator prompt.
+1. **Splits are sacred.** Real respondents are split once (seeded) into `pool` (agent may request from), `test` (used for round-by-round scores), `holdout` (headline number, touched only by `blindspot/eval/final_holdout.py`, run once). No code path may read `test` or `holdout` rows into a generator prompt.
 2. **No copying.** The agent improves generators by editing persona recipes (text rules/descriptions), never by inserting real respondents' answer rows into the synthetic crowd. The "add N real people" baseline exists to prove we beat copying.
 3. **Same demographics.** Every synthetic crowd matches the real target set's demographic distribution, so gaps reflect how answers combine, not who was sampled.
 4. **Honest numbers.** Report all baselines (independent marginals, Gaussian copula, add-N-real) and the human test-retest ceiling next to ours, even when ours loses.

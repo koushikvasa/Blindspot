@@ -20,7 +20,7 @@ Hackathon theme: "people say one thing and do another; find what people actually
 2. AI crowds fail in **three different ways**:
    - Claude "typical answers" (mode): too alike. Realistic but collapsed.
    - Claude "random answers" (sampled from its own probabilities): right spread, incoherent people.
-   - Flashpoint synthetic panel: right spread, stable, but answers don't combine like real people's (about the same as shuffled answers).
+   - Flashpoint synthetic panel: right spread, but answers don't combine like real people's (roughly shuffled-answer level on test, 0.61 vs 0.63; on holdout 0.759 and 0.674 for two panels, still below shuffled answers' 0.853). Run-to-run agreement was close on test but not on holdout, so do not call it stable.
 3. **Prompting cannot fix it.** Two agent designs that taught Claude text "archetypes" of missing people (H4, H4b) did not improve coverage.
 4. **Real data fixes it.** Statistics fitted on real people, or adding a small number of real people, raises coverage a lot.
 5. Open question being tested now: can the agent **learn whom to ask** (targeted recruitment) and **select** realistic diverse candidates (select-from-many)? These are the self-improving pieces.
@@ -73,7 +73,33 @@ Why they failed: H4's gap detection used the tiny asked set as reference (found 
 | flashpoint run 1 | 0.611 | 0.765 |
 | flashpoint run 2 | 0.617 | 0.740 |
 | claude_mode | 0.567 | 0.997 |
-Flashpoint: no bunching, entropy close to real, stable across runs; per-item distributions ~2× farther from real than baselines (TV 0.14 vs 0.07). Calibration (as described by Flashpoint's agent, unverified) only reweights age/gender composition.
+Flashpoint: no bunching, entropy close to real; the two test panels agreed (0.611 vs 0.617) but the two holdout panels did not (0.759 vs 0.674), so run-to-run stability is not established; per-item distributions ~2× farther from real than baselines (TV 0.14 vs 0.07). Calibration (as described by Flashpoint's agent, unverified) only reweights age/gender composition.
+
+### Final holdout run (once, 2026-11-13, code commit a828ae1, `results/final_holdout.md`; never rerun)
+Fit and filter on pool only; Claude holdout personas from demographics only (cost $0.10). k=5.
+| GSS holdout (n=224, 20 live items) | coverage | precision |
+| --- | --- | --- |
+| other_real_people | 0.982 | 0.938 |
+| gaussian_copula (pool) | 0.915 | 0.933 |
+| copula on 50 asked (10 seeds) | 0.893 | 0.902 |
+| independent_marginals | 0.853 | 0.817 |
+| copula on 25 asked (10 seeds) | 0.849 | 0.900 |
+| select_from_50, lambda 0.5, pool filter | 0.818 | 0.874 |
+| Flashpoint panel 1 / 2 (n=200) | 0.759 / 0.674 | 0.840 / 0.845 |
+| claude_mode | 0.634 | 1.000 |
+| claude_sampled | 0.487 | 0.647 |
+
+| Twin holdout (n=412, 30 items) | coverage | precision |
+| --- | --- | --- |
+| retest | 0.990 | 0.961 |
+| other_real_people | 0.976 | 0.922 |
+| gaussian_copula | 0.886 | 0.859 |
+| independent_marginals | 0.600 | 0.636 |
+| claude + GPT 50/50 mix | 0.438 | 0.976 |
+| gpt41mini_twin | 0.354 | 0.981 |
+| claude_mode | 0.350 | 0.973 |
+| claude_sampled | 0.180 | 0.408 |
+The holdout agrees with test: every AI-only crowd is at or below shuffled answers (Flashpoint panel 1 is the closest at 0.759 vs 0.853), statistics fit on real people win, selection from AI candidates helps but stays under the copulas. claude_mode puts 35% of GSS items above 80% on one option.
 
 Costs so far: about $2.6 of Anthropic API (Haiku 5.5). Flashpoint: $0 (synthetic panels free; no paid calls ever made).
 

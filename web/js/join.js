@@ -60,9 +60,11 @@
       answers = {};   // forget locally too
       const base = d.base_rate_uncovered != null
         ? `For context: ${pct(d.base_rate_uncovered)} of real people in the survey are also missed by this crowd.` : "";
+      const stat = d.base_rate_uncovered != null
+        ? `<div class="stat3 num">${pct(d.base_rate_uncovered)}</div><p>of real people in the survey are missed by this AI crowd too</p>` : "";
       screen.innerHTML = d.covered
-        ? `<div class="result"><div class="icon cov"></div><h1>Covered</h1><p>The AI crowd can imagine someone like you.</p><p>${base}</p></div>`
-        : `<div class="result"><div class="icon miss"></div><h1>I couldn't have imagined you.</h1><p>No one in the AI crowd answers the way you do. You are exactly the kind of person Blindspot goes looking for.</p><p>${base}</p></div>`;
+        ? `<div class="result"><div class="icon cov" aria-hidden="true">✓</div><h1>Someone in the crowd is like you</h1><p>The AI crowd can imagine a person who answers the way you do.</p>${stat}</div>`
+        : `<div class="result"><div class="icon miss" aria-hidden="true">!</div><h1>The AI couldn’t imagine you.</h1><p>No one in the AI crowd answers the way you do. You are exactly the kind of person Blindspot goes looking for.</p>${stat}</div>`;
       screen.innerHTML += `<div class="navrow"><span></span><button class="btn ghost" id="again">Done</button></div>`;
       $("again").onclick = intro;
     } catch (e) {

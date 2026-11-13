@@ -1,6 +1,6 @@
 # UI export (H8)
 
-Files in `results/ui/`, test-split numbers, runtime 89 s. Coverage assertion (map covered share equals summary coverage, 3 decimals):
+Files in `results/ui/`, test-split numbers, runtime 50 s. Coverage assertion (map covered share equals summary coverage, 3 decimals):
 
 | dataset | crowd | map covered share | summary coverage | equal |
 | --- | --- | --- | --- | --- |

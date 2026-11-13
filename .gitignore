@@ -22,3 +22,7 @@ results/agent/*
 
 # per-respondent prompts stay private (only system prompts and request settings are tracked)
 results/prompts/*_user_prompts.txt
+
+# local UI screenshots and browser-automation logs
+shots/
+.playwright-mcp/

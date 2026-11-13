@@ -1,4 +1,4 @@
-// Shared helpers: data loading (API first, static sample files as fallback) and number formatting.
+// Shared helpers: data loading (API first, static sample files as fallback), number formatting, tiny DOM helpers.
 window.BS = (() => {
   async function load(name) {
     try {
@@ -15,11 +15,14 @@ window.BS = (() => {
     if (d == null) d = v > 0.99 && v < 1 ? 1 : 0;   // 0.997 shows as 99.7%, not 100%
     return `${(v * 100).toFixed(d)}%`;
   };
+  const esc = (t) => String(t).replace(/[&<>"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
+  const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  function countTo(el, target, fmt = pct, ms = 600) {
-    const start = parseFloat(el.dataset.v || target);
+  function countTo(el, target, fmt = pct, ms = 700) {
+    if (!el) return;
+    const start = parseFloat(el.dataset.v ?? "0") || 0;
     el.dataset.v = target;
-    if (matchMedia("(prefers-reduced-motion: reduce)").matches || start === target) { el.textContent = fmt(target); return; }
+    if (reduced() || start === target) { el.textContent = fmt(target); return; }
     const t0 = performance.now();
     const step = (t) => {
       const k = Math.min(1, (t - t0) / ms), e = 1 - Math.pow(1 - k, 3);
@@ -29,10 +32,12 @@ window.BS = (() => {
     requestAnimationFrame(step);
   }
 
-  let sampleShown = false;
+  // Any panel that fell back to sample data raises one visible badge (never shown as real data).
   function markSample(isMock) {
-    if (!isMock || sampleShown) return;
-    sampleShown = true;
+    if (!isMock) return;
+    const slot = document.getElementById("sampleBadge");
+    if (slot) { slot.textContent = "Sample data in use"; return; }
+    if (document.querySelector(".sample-flag")) return;
     const b = document.createElement("span");
     b.className = "badge sample sample-flag";
     b.title = "Some panels are using sample data until real results are exported to results/ui/";
@@ -40,5 +45,5 @@ window.BS = (() => {
     document.body.appendChild(b);
   }
 
-  return { load, pct, countTo, markSample };
+  return { load, pct, esc, reduced, countTo, markSample };
 })();

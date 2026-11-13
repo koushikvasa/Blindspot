@@ -14,13 +14,12 @@ from pathlib import Path
 
 import numpy as np
 
-from blindspot.coverage import evaluate
+from blindspot.coverage import evaluate, real_distances
 from blindspot.generators import claude_personas as cp
 from blindspot.generators.baselines import gaussian_copula, independent_marginals, other_real_people
 from blindspot.generators.claude_client import ResponseCache, Usage
 from blindspot.generators.flashpoint_panel import load as load_fp
 from blindspot.space import encode, gower
-from blindspot.space.maps import _umap_xy
 
 from .experiment0 import K, SEED, _assert_no_holdout, build_crowds, load_inputs
 from .experiment_fp import FP_DIR, RUNS, restrict
@@ -99,8 +98,36 @@ def fixed_layout(target) -> np.ndarray:
     x = encode(target)
     dist = np.nan_to_num(gower(x, x, target.items), nan=1.0)
     np.fill_diagonal(dist, 0.0)
-    xy = _umap_xy(dist, SEED)
-    return (xy - xy.min(axis=0)) / (xy.max(axis=0) - xy.min(axis=0))
+    import umap  # slow import (numba)
+
+    reducer = umap.UMAP(metric="precomputed", n_neighbors=min(30, len(dist) - 1), min_dist=0.9, spread=1.8,
+                        random_state=SEED, compatibility_layout=True)   # wide spacing so the map stays legible
+    xy = reducer.fit_transform(dist)
+    lo, hi = np.percentile(xy, [1, 99], axis=0)                          # outliers must not squash the rest
+    return declutter(np.clip((xy - lo) / (hi - lo), 0.0, 1.0))
+
+
+def declutter(xy: np.ndarray, iterations: int = 80) -> np.ndarray:
+    """Nudge dots apart until none is closer than a minimum distance, so every person stays visible.
+    Positions barely move (the layout is still the UMAP layout); the result is the same fixed layout for every crowd."""
+    from scipy.spatial import cKDTree
+
+    min_d = 0.55 / np.sqrt(len(xy))
+    out = xy.copy()
+    for _ in range(iterations):
+        pairs = np.array(sorted(cKDTree(out).query_pairs(min_d)))
+        if not len(pairs):
+            break
+        a, b = pairs[:, 0], pairs[:, 1]
+        delta = out[a] - out[b]
+        dist = np.linalg.norm(delta, axis=1, keepdims=True)
+        direction = np.where(dist > 1e-9, delta / np.maximum(dist, 1e-9),
+                             np.random.default_rng(SEED).normal(size=delta.shape))
+        push = 0.5 * (min_d - dist) * direction * 0.6
+        np.add.at(out, a, push)
+        np.add.at(out, b, -push)
+        out = np.clip(out, 0.0, 1.0)
+    return out
 
 
 def synthetic_xy(target, crowd, xy: np.ndarray) -> np.ndarray:
@@ -263,6 +290,69 @@ def build_live(gss_w: dict, cov_claude: float) -> dict:
             "base_rate_uncovered": r3(1 - cov_claude)}
 
 
+# ---------- one-person examples ----------
+SHORT_Q = {  # <= 40 characters, written from the verified wording in blindspot/data/items.py
+    "trppl": "Can most people be trusted? (0-10)", "trcourts": "Trust in America's courts (0-10)",
+    "intcnfrm": "Double-checks political news online", "satfin": "Satisfied with own finances",
+    "finalter": "Finances: better, same or worse", "finrela": "Family income vs. average",
+    "class": "Own social class", "econstat": "State of the US economy", "happy": "How happy these days",
+    "life": "Life: exciting, routine or dull", "socfrend": "Social evening with outside friends",
+    "socrel": "Social evenings with relatives", "workless": "Cut back work for family",
+    "meovrwrk": "Family suffers when men overwork", "techesy": "Technology makes life easier",
+    "harmgood1": "Technology does more harm than good", "aiworry": "Worried AI will take many jobs",
+    "aidrive": "Comfort with a driverless car (0-10)", "aimed": "Comfort with robot surgery (0-10)",
+    "natsci": "Spending on scientific research"}
+EX_RATIO = (1.2, 2.0)      # clear but not extreme: distance to the nearest AI person / the person's own 5-NN radius
+EX_NDIFF = (8, 15)         # (real data: uncovered people have a median ratio of 1.13 and a maximum near 1.4)
+EX_QUANTILES = (0.15, 0.5, 0.85)
+EX_DIFF_ROWS, EX_MATCH_ROWS = 8, 2
+
+
+def answer_label(item, idx: float) -> str:
+    if len(item.options) == 11:
+        return f"{int(idx)} out of 10"
+    text = item.options[int(idx)]
+    return text[:1].upper() + text[1:]
+
+
+def build_examples(gss_w: dict) -> dict:
+    """Three anonymous GSS test people the Claude crowd misses, with the closest Claude person (same Gower distance)."""
+    target, crowd = gss_w["target"], gss_w["crowds"]["claude_mode"]
+    items = target.items
+    rr = real_distances(target, items)
+    radius = np.partition(rr, K - 1, axis=1)[:, K - 1]
+    x_real, x_ai = encode(target), encode(crowd)
+    d = np.nan_to_num(gower(x_real, x_ai, items), nan=np.inf)
+    nn, near = d.min(axis=1), d.argmin(axis=1)
+    a_real, a_ai = target.answers.to_numpy(), crowd.answers.to_numpy()[near]
+    diff = np.abs(x_real - encode(crowd)[near])
+    n_diff = (a_real != a_ai).sum(axis=1)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        ratio = np.where(radius > 0, nn / radius, np.inf)
+    ok = (nn > radius) & ~np.isnan(a_real).any(axis=1) & ~np.isnan(a_ai).any(axis=1)
+    cand = np.where(ok & (ratio >= EX_RATIO[0]) & (ratio <= EX_RATIO[1]) & (n_diff >= EX_NDIFF[0]) & (n_diff <= EX_NDIFF[1]))[0]
+    if len(cand) < 3:
+        raise SystemExit("not enough uncovered examples with a clear but not extreme distance")
+    cand = cand[np.argsort(ratio[cand], kind="stable")]
+    picks = [int(cand[min(len(cand) - 1, int(q * len(cand)))]) for q in EX_QUANTILES]
+    fam = [it.family for it in items]
+    examples = []
+    for label, i in zip(("Person A", "Person B", "Person C"), picks):
+        order = [j for j in np.argsort(-diff[i], kind="stable") if diff[i, j] > 0][:EX_DIFF_ROWS]
+        same = [j for j in range(len(items)) if diff[i, j] == 0]
+        match, seen = [], set()
+        for j in same:                                   # prefer matches from different question families
+            if fam[j] not in seen and len(match) < EX_MATCH_ROWS:
+                match.append(j); seen.add(fam[j])
+        match += [j for j in same if j not in match][:EX_MATCH_ROWS - len(match)]
+        rows = [{"q": SHORT_Q[items[j].code], "real": answer_label(items[j], a_real[i, j]),
+                 "ai": answer_label(items[j], a_ai[i, j])} for j in list(order) + match]
+        assert all(len(r["q"]) <= 40 for r in rows)
+        examples.append({"label": label, "ratio": round(float(ratio[i]), 1), "n_diff": int(n_diff[i]),
+                         "n_items": len(items), "rows": rows})
+    return {"examples": examples}
+
+
 # ---------- run ----------
 def run() -> dict:
     started = time.perf_counter()
@@ -285,7 +375,7 @@ def run() -> dict:
     repairs, board, fair = build_repairs(b1, fp, h4d, e2, e2b), build_scoreboard(b1, h4d), build_fairness(h4c)
     live = build_live(worlds["gss"], summary["datasets"]["gss"]["crowds"]["claude_mode"]["coverage"])
     for name, payload in (("repairs_gss", repairs), ("scoreboard_gss", board), ("fairness_gss", fair),
-                          ("live_gss", live)):
+                          ("live_gss", live), ("examples_gss", build_examples(worlds["gss"]))):
         write(name, payload)
     (RESULTS / "ui_export.md").write_text(to_markdown(checks, repairs, board, fair, live, time.perf_counter() - started),
                                           encoding="utf-8")

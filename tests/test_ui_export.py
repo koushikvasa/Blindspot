@@ -69,6 +69,18 @@ def test_holdout_coverage_is_present_only_where_a_holdout_number_exists_and_is_a
                 assert 0 <= entry["holdout_coverage"] <= 1
 
 
+def test_examples_are_anonymous_and_well_formed():
+    examples = files()["examples_gss"]["examples"]
+    assert len(examples) == 3
+    for e in examples:
+        assert set(e) == {"label", "ratio", "n_diff", "n_items", "rows"}
+        assert e["ratio"] > 1 and 0 < e["n_diff"] <= e["n_items"]
+        assert len(e["rows"]) == 10
+        assert all(set(r) == {"q", "real", "ai"} and len(r["q"]) <= 40 for r in e["rows"])
+        differing = sum(r["real"] != r["ai"] for r in e["rows"])
+        assert differing == 8 and differing <= e["n_diff"]        # 8 biggest differences + 2 matches
+
+
 def test_live_bundle_is_consistent_and_small_groups_are_excluded_from_fairness():
     f = files()
     live = f["live_gss"]

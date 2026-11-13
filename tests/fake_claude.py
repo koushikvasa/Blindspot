@@ -35,6 +35,12 @@ def generic_responder(params: dict, n: int) -> str:
         return json.dumps({"name": f"pattern {_seed(params) % 100}", "share_low_pct": 5, "share_high_pct": 20,
                            "description": "People whose judgments tend to move together in one direction, "
                                           "combining trust and caution in an unusual way."})
+    if "variants" in props:
+        s = _seed(params) % 1000
+        return json.dumps({"variants": [
+            {"name": f"variant {k} {s}", "description": f"People whose judgments move together in way {k} {s}, "
+                                                        f"combining trust and caution differently."}
+            for k in range(3)]})
     if "segments" in props:
         return json.dumps({"segments": [
             {"conditions": [{"field": "age_band", "value": "65+"}], "reason": "older people show the pattern"},
@@ -79,8 +85,9 @@ class FakeClient:
 
 
 def calls_by_kind(client: FakeClient) -> dict[str, int]:
-    out = {"persona": 0, "describe": 0, "seek": 0}
+    out = {"persona": 0, "describe": 0, "seek": 0, "propose": 0}
     for params in client.calls:
         props = params["output_config"]["format"]["schema"]["properties"]
-        out["persona" if "answers" in props else "describe" if "description" in props else "seek"] += 1
+        out["persona" if "answers" in props else "describe" if "description" in props
+            else "propose" if "variants" in props else "seek"] += 1
     return out

@@ -1,6 +1,6 @@
 # H4d: B real people, select from AI candidates vs fit statistics (zero cost, GSS test split)
 
-20 live items, target n = 334, 10 seeds, same asked people for every method. Cells: mean (2.5-97.5 percentile across seeds). k = 5. Realism filter = the B asked people only (k = min(5, B//5)); lambda chosen per seed from [0.0, 0.25, 0.5, 1.0] on a held-out half of the asked people. `select_claude_plus_fp`: the 400 saved Flashpoint people form a shared pool competing in every slot with that persona's 50 Claude candidates, each used at most once. `claude_plus_asked` and `select_plus_asked` INCLUDE REAL RESPONDENTS (asked people swapped in). Near-dup = synthetic rows within 0.02 Gower of any ASKED person (swapped-in rows exempt). Commit `0c43913b4b973340ee61df10f0dc5b1ed4192fd3`. Runtime 471.1 s.
+20 live items, target n = 334, 10 seeds, same asked people for every method. Cells: mean (2.5-97.5 percentile across seeds). k = 5. Realism filter = the B asked people only (k = min(5, B//5)); lambda chosen per seed from [0.0, 0.25, 0.5, 1.0] on a held-out half of the asked people. `select_claude_plus_fp`: the 400 saved Flashpoint people form a shared pool competing in every slot with that persona's 50 Claude candidates, each used at most once. `claude_plus_asked` and `select_plus_asked` INCLUDE REAL RESPONDENTS (asked people swapped in). Near-dup = synthetic rows within 0.02 Gower of any ASKED person (swapped-in rows exempt). Commit `bdf4e83bde4c756b8089a345dee817634712844e-dirty`. Runtime 917.3 s.
 
 ## Coverage
 

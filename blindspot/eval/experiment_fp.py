@@ -88,7 +88,8 @@ def baseline_crowds(seed: int, target: Respondents, pool: Respondents, splits: d
 def _agg(values: list[float]) -> dict:
     v = np.asarray(values, float)
     return {"mean": float(v.mean()), "sd": float(v.std(ddof=1)),
-            "p2_5": float(np.percentile(v, 2.5)), "p97_5": float(np.percentile(v, 97.5))}
+            "p2_5": float(np.percentile(v, 2.5)), "p97_5": float(np.percentile(v, 97.5)),
+            "min": float(v.min()), "max": float(v.max())}
 
 
 def summarize(per_seed: list[dict]) -> dict:

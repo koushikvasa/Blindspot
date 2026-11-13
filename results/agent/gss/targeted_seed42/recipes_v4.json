@@ -1,0 +1,79 @@
+{
+ "version": 4,
+ "n_asked": 100,
+ "no_archetype_weight": 0.74,
+ "archetypes": [
+  {
+   "id": "A1",
+   "name": "Distrustful routine skeptics",
+   "text": "People who say you can't be too careful with others yet still check political information online, and who feel mostly unenthused about politics and democracy while staying pretty happy overall. They report a stalled, below-average family income and see themselves as lower class, but rate the economy as neither good nor bad and keep close ties with relatives. Their unusual mix is strong unease about robots and AI paired with ordinary, mid-level views on science spending and technology, so their worries about automation sit oddly beside their calm, routine outlook on life.",
+   "weight": 0.01,
+   "n_members": 1,
+   "round_created": 1,
+   "share_estimate_by_agent": [
+    0.01,
+    0.08
+   ]
+  },
+  {
+   "id": "A2",
+   "name": "Distrustful disengaged skeptics",
+   "text": "People who combine deep distrust of others and institutions with political withdrawal and dissatisfaction, yet feel personally content with their happiness and family life. They rate the economy harshly and see taxes as too high, but their own finances feel stable. Their social lives are mostly routine and low-key, with occasional family and friend contact. They hold mixed views on technology and AI, ranging from worry to ambivalence, which sits oddly beside their otherwise firm stances on work-family issues.",
+   "weight": 0.01,
+   "n_members": 1,
+   "round_created": 2,
+   "share_estimate_by_agent": [
+    0.02,
+    0.06
+   ]
+  },
+  {
+   "id": "A4",
+   "name": "Politically disengaged but content",
+   "text": "These respondents report low trust in institutions and dissatisfaction with how democracy works, yet describe their personal finances and happiness positively. They show little interest in politics and rarely verify online political information, while still feeling the economy is good. Their social lives mix frequent family contact with few evening outings with friends outside the neighborhood. Views on technology and AI are split, and they often withhold strong opinions, combining personal contentment with institutional skepticism in a way that cuts against typical civic engagement patterns.",
+   "weight": 0.05,
+   "n_members": 5,
+   "round_created": 3,
+   "share_estimate_by_agent": [
+    0.04,
+    0.12
+   ]
+  },
+  {
+   "id": "A5",
+   "name": "Distrustful economic pessimists",
+   "text": "These respondents combine deep distrust of other people and institutions with a sense that their own finances have slipped, even though their self-described standing is middling. Their pessimism about democracy and the economy runs alongside an unusual enthusiasm for technology and a sharp split on AI, where some are unbothered while others are very worried. They also sense a dull, routine life, yet many still value scientific spending and do not see taxes as clearly excessive. Their outlook is wary and withdrawn, but not uniformly hostile to change.",
+   "weight": 0.12,
+   "n_members": 12,
+   "round_created": 3,
+   "share_estimate_by_agent": [
+    0.03,
+    0.08
+   ]
+  },
+  {
+   "id": "A6",
+   "name": "Distrustful but content loners",
+   "text": "People who strongly distrust others and institutions and feel little connection to politics, yet report being pretty happy and financially stable. Their wariness of people and institutions sits alongside a comfortable personal life, and they often describe daily routines as routine or dull while still rating themselves happy. They tend to be uneasy about AI and robots and skeptical of tech claims, while their social lives are modest and centered on family or distant friends. The mix of high personal contentment with deep institutional distrust and low civic engagement is the surprising core of the pattern.",
+   "weight": 0.06,
+   "n_members": 6,
+   "round_created": 4,
+   "share_estimate_by_agent": [
+    0.04,
+    0.08
+   ]
+  },
+  {
+   "id": "A7",
+   "name": "Distrustful institutional skeptic with high tech discomfort",
+   "text": "These respondents are deeply wary of other people and of institutions, yet they report very high personal happiness and find life exciting. Their dissatisfaction with democracy and finances sits alongside contentment with their own life, a combination that is unexpected. They favor more science spending despite distrusting institutions, and they are strongly uneasy about AI and robots while still feeling their broader family and social life is fulfilling.",
+   "weight": 0.01,
+   "n_members": 1,
+   "round_created": 4,
+   "share_estimate_by_agent": [
+    0.01,
+    0.02
+   ]
+  }
+ ]
+}

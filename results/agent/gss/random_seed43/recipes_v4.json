@@ -1,0 +1,67 @@
+{
+ "version": 4,
+ "n_asked": 100,
+ "no_archetype_weight": 0.85,
+ "archetypes": [
+  {
+   "id": "A1",
+   "name": "Distrustful pessimistic institution-skeptics",
+   "text": "These respondents combine deep distrust of other people and institutions with bleak views of national democracy, the economy, and their own finances, yet they are not disengaged: many are highly interested in politics and actively verify information online. Their pessimism spans personal, social, and national levels at once, and they often feel worried about technology and automation while still describing ordinary family and social life as routine or moderately happy.",
+   "weight": 0.02,
+   "n_members": 2,
+   "round_created": 2,
+   "share_estimate_by_agent": [
+    0.02,
+    0.12
+   ]
+  },
+  {
+   "id": "A3",
+   "name": "Distrustful disengaged skeptics",
+   "text": "People who distrust others and institutions yet describe their own lives as fairly stable and routine. Political disengagement and dissatisfaction with democracy often sit alongside a rating of their own finances as average or improving, a split between personal comfort and broader pessimism. Many are wary of AI and automation while still feeling their personal life is steady, and their social lives are sparse, with few evenings spent with friends or relatives.",
+   "weight": 0.04,
+   "n_members": 4,
+   "round_created": 3,
+   "share_estimate_by_agent": [
+    0.05,
+    0.12
+   ]
+  },
+  {
+   "id": "A4",
+   "name": "Trusting, upbeat, tech-wary traditionalists",
+   "text": "These respondents combine high generalized trust and strong satisfaction with democracy, finances, and life with a deep distrust of technology and AI, which is an unusual pairing for a group otherwise content with institutions. They feel financially improving yet see their income as below average, identify as middle class, and describe life as both exciting and very happy. Socially they keep a narrow circle, rarely spending evenings with outside friends but seeing relatives monthly. They avoid verifying political information online, dismiss work pressures on family life, yet want more public spending on science. Their optimism about personal life coexists with sharp anxiety about automation.",
+   "weight": 0.01,
+   "n_members": 1,
+   "round_created": 3,
+   "share_estimate_by_agent": [
+    0.01,
+    0.03
+   ]
+  },
+  {
+   "id": "A5",
+   "name": "Distrustful but socially engaged",
+   "text": "People who are deeply distrustful of others and institutions and dissatisfied with democracy and the economy, yet still report being pretty happy and find life exciting. Their political alienation and financial pessimism coexist with a warm, active family and social life, and they often rate themselves as working or middle class despite feeling their income lags behind average. Views on technology and AI are mixed, sometimes wary, and they are inclined to verify online political information while not necessarily following politics closely.",
+   "weight": 0.05,
+   "n_members": 5,
+   "round_created": 4,
+   "share_estimate_by_agent": [
+    0.03,
+    0.07
+   ]
+  },
+  {
+   "id": "A6",
+   "name": "Distrustful disengaged skeptics",
+   "text": "People who view others and institutions with deep suspicion yet remain politically passive and personally content. They distrust nearly every institution and feel democracy is failing, but rarely check political claims online and show little interest in politics. Their financial and social-class self-assessments are often moderate or positive, which sits oddly beside their dark views of the system. They feel uneasy about automation and AI, yet tend to be fairly ordinary in daily social life and routine. Their combination of wholesale mistrust with personal contentment and low civic engagement is the surprising feature.",
+   "weight": 0.03,
+   "n_members": 3,
+   "round_created": 4,
+   "share_estimate_by_agent": [
+    0.01,
+    0.05
+   ]
+  }
+ ]
+}

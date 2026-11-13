@@ -1,0 +1,19 @@
+{
+ "version": 1,
+ "n_asked": 25,
+ "no_archetype_weight": 0.96,
+ "archetypes": [
+  {
+   "id": "A1",
+   "name": "Distrustful routine skeptics",
+   "text": "People who say you can't be too careful with others yet still check political information online, and who feel mostly unenthused about politics and democracy while staying pretty happy overall. They report a stalled, below-average family income and see themselves as lower class, but rate the economy as neither good nor bad and keep close ties with relatives. Their unusual mix is strong unease about robots and AI paired with ordinary, mid-level views on science spending and technology, so their worries about automation sit oddly beside their calm, routine outlook on life.",
+   "weight": 0.04,
+   "n_members": 1,
+   "round_created": 1,
+   "share_estimate_by_agent": [
+    0.01,
+    0.08
+   ]
+  }
+ ]
+}

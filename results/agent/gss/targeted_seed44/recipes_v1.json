@@ -1,0 +1,19 @@
+{
+ "version": 1,
+ "n_asked": 25,
+ "no_archetype_weight": 0.96,
+ "archetypes": [
+  {
+   "id": "A1",
+   "name": "Distrustful disengaged skeptics",
+   "text": "These respondents combine deep distrust of other people and institutions with a withdrawn, routine-bound outlook on public life. They rate the economy very badly and feel the country's democracy is failing them, yet they show little interest in politics and do not verify political information they encounter. Their personal finances feel stable and above average, so their pessimism is largely about society rather than their own circumstances. They keep a modest social life and find life routine rather than exciting. Their discomfort with robots and AI is strong, yet they are relatively comfortable with technology in general and do not want more science spending cuts. The mix of cynicism about the system with moderate contentment in private life is the...",
+   "weight": 0.04,
+   "n_members": 1,
+   "round_created": 1,
+   "share_estimate_by_agent": [
+    0.02,
+    0.05
+   ]
+  }
+ ]
+}

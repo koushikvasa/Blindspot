@@ -1,0 +1,43 @@
+{
+ "version": 2,
+ "n_asked": 50,
+ "no_archetype_weight": 0.82,
+ "archetypes": [
+  {
+   "id": "A1",
+   "name": "Distrustful disengaged skeptics",
+   "text": "These respondents combine deep distrust of other people and institutions with a withdrawn, routine-bound outlook on public life. They rate the economy very badly and feel the country's democracy is failing them, yet they show little interest in politics and do not verify political information they encounter. Their personal finances feel stable and above average, so their pessimism is largely about society rather than their own circumstances. They keep a modest social life and find life routine rather than exciting. Their discomfort with robots and AI is strong, yet they are relatively comfortable with technology in general and do not want more science spending cuts. The mix of cynicism about the system with moderate contentment in private life is the...",
+   "weight": 0.02,
+   "n_members": 1,
+   "round_created": 1,
+   "share_estimate_by_agent": [
+    0.02,
+    0.05
+   ]
+  },
+  {
+   "id": "A2",
+   "name": "Distrustful but content insiders",
+   "text": "These respondents combine low interpersonal and institutional trust with a comfortable personal life. They feel little trust in people or institutions and are dissatisfied with how democracy works, yet they rate their finances as stable or improving and report being pretty happy. Many describe the economy as bad while still seeing their own situation as fine, and they are uneasy about AI and robots while often treating technology in mixed or contradictory ways. Routine socializing with friends or relatives runs alongside a wary, skeptical view of the wider world, which is the surprising pairing that defines the group.",
+   "weight": 0.12,
+   "n_members": 6,
+   "round_created": 2,
+   "share_estimate_by_agent": [
+    0.08,
+    0.16
+   ]
+  },
+  {
+   "id": "A3",
+   "name": "Distrustful low-income skeptics",
+   "text": "People who guardedly distrust others and institutions yet express high satisfaction with democracy, a combination that runs against the usual link between institutional trust and democratic approval. They describe their own finances as strained and self-identify as lower class while calling family income low-to-average, but many also say their situation is stable or improving. Routine or dull daily life, sparse friendships outside the neighborhood, and frequent family evenings go together. They tend to resist technology and automation and feel uneasy about machines doing human tasks, while differing on whether science spending is too high or about right.",
+   "weight": 0.04,
+   "n_members": 2,
+   "round_created": 2,
+   "share_estimate_by_agent": [
+    0.02,
+    0.06
+   ]
+  }
+ ]
+}

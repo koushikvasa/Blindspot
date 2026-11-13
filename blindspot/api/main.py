@@ -10,7 +10,10 @@ import re
 from functools import lru_cache
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+import time
+from collections import defaultdict, deque
+
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -60,8 +63,25 @@ class Answers(BaseModel):
     answers: dict[str, int | None]
 
 
+_hits: dict[str, deque] = defaultdict(deque)
+RATE_LIMIT = (6, 60.0)  # at most 6 submissions per visitor per minute
+
+
+def _rate_ok(ip: str) -> bool:
+    now, (n, window) = time.time(), RATE_LIMIT
+    q = _hits[ip]
+    while q and now - q[0] > window:
+        q.popleft()
+    if len(q) >= n:
+        return False
+    q.append(now)
+    return True
+
+
 @app.post("/api/live/answer")
-def live_answer(body: Answers):
+def live_answer(body: Answers, request: Request):
+    if not _rate_ok(request.client.host if request.client else "unknown"):
+        raise HTTPException(429, "Too many tries. Please wait a minute.")
     scorer, mock = _scorer()
     try:
         result = scorer.score(body.answers)

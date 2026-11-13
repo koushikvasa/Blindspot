@@ -64,3 +64,12 @@ def test_scorer_identical_person_is_covered():
     s = LiveScorer(b)
     assert s.score({"a": 0, "b": 0})["covered"] is True
     assert s.score({"a": 1, "b": 2})["covered"] is False
+
+
+def test_live_answer_rate_limited():
+    main._hits.clear()
+    items = client.get("/api/live/questions").json()["items"]
+    answers = {it["code"]: 0 for it in items}
+    codes = [client.post("/api/live/answer", json={"answers": answers}).status_code for _ in range(8)]
+    assert codes[:6] == [200] * 6 and 429 in codes[6:]
+    main._hits.clear()

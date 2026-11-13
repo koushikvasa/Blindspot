@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Blindspot: find who your synthetic crowd leaves out</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 10 10%22%3E%3Ccircle cx=%225%22 cy=%225%22 r=%224%22 fill=%22%23FF7A59%22/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body>
+<div class="brand"><span class="dot"></span>Blindspot</div>
+<nav class="pager" id="pager" aria-label="Scenes"></nav>
+<div class="hint"><kbd>↑</kbd> <kbd>↓</kbd> scenes &nbsp; <kbd>←</kbd> <kbd>→</kbd> crowds and rounds</div>
+
+<main class="story" id="story">
+
+  <section class="scene hook" data-name="Hook">
+    <p class="eyebrow">Synthetic survey respondents, tested against real people</p>
+    <div class="big num" id="hookBig">–</div>
+    <div class="big-line" id="hookLine">of real people have no one like them in the AI crowd.</div>
+    <div class="sub" id="hookSub"></div>
+    <div class="source" id="hookSource"></div>
+  </section>
+
+  <section class="scene" data-name="Constellation">
+    <p class="eyebrow">Every dot is a real survey respondent. Teal glow is the AI crowd.</p>
+    <h2>Who can the crowd imagine?</h2>
+    <div class="split">
+      <div class="mapbox"><canvas id="mapMain"></canvas></div>
+      <div class="side">
+        <div class="card">
+          <h3>Dataset</h3>
+          <div class="seg" id="dsSeg"></div>
+        </div>
+        <div class="card">
+          <h3>Crowd</h3>
+          <div class="chips" id="crowdChips"></div>
+        </div>
+        <div class="card stats">
+          <div><div class="stat miss num" id="statMiss">–</div><div class="stat-label">real people missed</div></div>
+          <div><div class="stat syn num" id="statPrec">–</div><div class="stat-label">of the crowd look realistic</div></div>
+        </div>
+        <div class="card legend">
+          <span><i class="sw real"></i>Real person, someone in the crowd is like them</span>
+          <span><i class="sw miss"></i>Real person the crowd cannot imagine</span>
+          <span><i class="sw syn"></i>Synthetic person</span>
+        </div>
+        <div class="source" id="mainSource"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene" data-name="Randomness">
+    <p class="eyebrow">The obvious fix does not work</p>
+    <h2>Typical answers are too alike. Random answers are nobody.</h2>
+    <div class="duo">
+      <div>
+        <div class="mapbox"><canvas id="mapModeC"></canvas></div>
+        <div class="cap"><h3>Claude, typical answers</h3><div class="nums" id="capMode"></div></div>
+      </div>
+      <div>
+        <div class="mapbox"><canvas id="mapSampC"></canvas></div>
+        <div class="cap"><h3>Claude, random answers</h3><div class="nums" id="capSamp"></div></div>
+      </div>
+    </div>
+    <p class="lede">Sampling from the model's own probabilities restores the spread of answers, but not which answers belong together in one person.</p>
+  </section>
+
+  <section class="scene" data-name="Agent">
+    <p class="eyebrow">Blindspot at work on GSS 2024</p>
+    <h2>Find the gap. Try to imagine it. If you can't, go ask the right people.</h2>
+    <div class="split">
+      <div class="mapbox"><canvas id="mapAgent"></canvas></div>
+      <div class="side">
+        <div class="card">
+          <h3 id="roundLabel">Round 0</h3>
+          <div class="rounds"><input type="range" id="roundSlider" min="0" max="0" value="0" aria-label="Round"><span class="num" id="roundNum">0</span></div>
+        </div>
+        <div class="card stats">
+          <div><div class="stat syn num" id="agentCov">–</div><div class="stat-label">real people covered</div></div>
+          <div><div class="stat num" id="agentAsked">0</div><div class="stat-label">real people asked</div></div>
+        </div>
+        <div class="card">
+          <h3>Gaps found</h3>
+          <div class="gaps" id="gaps"><div class="empty">Round 0: the plain AI crowd, before asking anyone.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="scene" data-name="Scoreboard">
+    <p class="eyebrow">Same number of real people asked. Test people the agent never saw.</p>
+    <h2>The honest scoreboard</h2>
+    <div class="chart"><div id="chart"></div><p class="caption" id="chartCaption"></p></div>
+  </section>
+
+  <section class="scene" data-name="Join">
+    <p class="eyebrow">Live</p>
+    <h2>Can the AI imagine you?</h2>
+    <div class="joinwrap">
+      <div class="qr" id="qr"></div>
+      <div>
+        <p class="lede" style="font-size:24px;color:var(--text)">Scan, answer a few quick questions, and see whether anyone in the AI crowd is like you.</p>
+        <p class="lede">Anonymous. Nothing is stored.</p>
+        <div class="joinurl" id="joinUrl"></div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script src="/static/vendor/qrcode.js"></script>
+<script src="/static/js/common.js"></script>
+<script src="/static/js/map.js"></script>
+<script src="/static/js/story.js"></script>
+</body>
+</html>

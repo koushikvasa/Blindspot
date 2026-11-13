@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Blindspot: live</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 10 10%22%3E%3Ccircle cx=%225%22 cy=%225%22 r=%224%22 fill=%22%23FF7A59%22/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body class="stage-page">
+<div class="stage">
+  <div class="bar">
+    <div>
+      <p class="eyebrow">Live · GSS 2024 · <span id="crowdLabel">AI crowd</span></p>
+      <h1>Can the AI imagine you?</h1>
+    </div>
+    <div class="counts">
+      <div><div class="stat num" id="nVisitors">0</div><div class="stat-label">people joined</div></div>
+      <div><div class="stat miss num" id="nMissed">0</div><div class="stat-label">it couldn't imagine</div></div>
+    </div>
+  </div>
+  <div class="mapbox" id="box"><canvas id="mapStage"></canvas></div>
+</div>
+<script src="/static/js/common.js"></script>
+<script src="/static/js/map.js"></script>
+<script>
+(async () => {
+  const $ = (id) => document.getElementById(id);
+  const m = new Constellation($("mapStage"));
+  const params = new URLSearchParams(location.search);
+  const base = params.get("map") || "map_gss_claude_mode";
+  try { const r = await BS.load(base); BS.markSample(r.mock); m.set(r.data); } catch (_) {}
+  try { const q = await (await fetch("/api/live/questions")).json(); $("crowdLabel").textContent = q.crowd_label; } catch (_) {}
+  let after = 0, n = 0, missed = 0;
+  async function poll() {
+    try {
+      const d = await (await fetch(`/api/live/recent?after=${after}`, { cache: "no-store" })).json();
+      for (const p of d.points) {
+        after = Math.max(after, p.seq); n++; if (!p.covered) missed++;
+        m.addVisitor(p);
+        const t = document.createElement("div");
+        t.className = "toast";
+        t.style.left = `${28 + p.x * (m.w - 56)}px`; t.style.top = `${28 + (1 - p.y) * (m.h - 56)}px`;
+        t.style.color = p.covered ? "var(--syn)" : "var(--miss)";
+        t.textContent = p.covered ? "Covered" : "Couldn't imagine";
+        $("box").appendChild(t);
+        setTimeout(() => (t.style.opacity = 0), 5000); setTimeout(() => t.remove(), 6000);
+      }
+      $("nVisitors").textContent = n; $("nMissed").textContent = missed;
+    } catch (_) {}
+    setTimeout(poll, 1500);
+  }
+  poll();
+})();
+</script>
+</body>
+</html>

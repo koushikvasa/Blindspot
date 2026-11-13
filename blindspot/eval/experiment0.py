@@ -61,7 +61,10 @@ def build_crowds(d: DatasetInput, target: Respondents, pool: Respondents, seed: 
 
 
 def _public(metrics: dict) -> dict:
-    return {k: v for k, v in metrics.items() if not k.startswith("_")}
+    """Drop private keys and respondent ids; keep only how many real people are uncovered."""
+    out = {k: v for k, v in metrics.items() if not k.startswith("_") and k != "uncovered_ids"}
+    out["n_uncovered"] = len(metrics["uncovered_ids"])
+    return out
 
 
 def run_dataset(d: DatasetInput, out_dir: Path, k: int, k_values: tuple[int, ...], n_boot: int,
@@ -75,6 +78,8 @@ def run_dataset(d: DatasetInput, out_dir: Path, k: int, k_values: tuple[int, ...
     results = {name: evaluate(target, crowd, target.items, k=k, n_boot=n_boot, seed=seed,
                               k_values=k_values, real_dist=rr)
                for name, crowd in crowds.items()}
+    for name, m in results.items():                       # check the full output before ids are dropped
+        _assert_no_holdout(m["uncovered_ids"], d.splits, f"{d.name} output {name}")
     eval_seconds = round(time.perf_counter() - started, 1)
     map_files = {}
     if maps and d.map_crowds:
@@ -157,9 +162,6 @@ def run(inputs: list[DatasetInput], out_dir: Path = RESULTS, k: int = K, k_value
         "datasets": datasets,
         "runtime_seconds": round(time.perf_counter() - started, 1),
     }
-    for d in inputs:
-        for crowd in report["datasets"][d.name]["crowds"].values():
-            _assert_no_holdout(crowd["uncovered_ids"], d.splits, f"{d.name} output")
     (out_dir / "experiment0.json").write_text(json.dumps(report, indent=1), encoding="utf-8")
     (out_dir / "experiment0.md").write_text(to_markdown(report), encoding="utf-8")
     return report

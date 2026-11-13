@@ -80,7 +80,10 @@ def cost_of_all_responses(plans: dict[str, cp.Plan], cache: ResponseCache, batch
 
 
 def _public(m: dict) -> dict:
-    return {k: v for k, v in m.items() if not k.startswith("_")}
+    """Drop private keys and respondent ids; keep only how many real people are uncovered."""
+    out = {k: v for k, v in m.items() if not k.startswith("_") and k != "uncovered_ids"}
+    out["n_uncovered"] = len(m["uncovered_ids"])
+    return out
 
 
 def evaluate_dataset(d: DatasetInput, crowds: cp.ClaudeCrowds, h2: dict, n_boot: int, seed: int,
@@ -92,6 +95,8 @@ def evaluate_dataset(d: DatasetInput, crowds: cp.ClaudeCrowds, h2: dict, n_boot:
     new = {"claude_mode": crowds.mode, "claude_sampled": crowds.sampled}
     results = {n: evaluate(target, c, target.items, k=K, n_boot=n_boot, seed=seed, k_values=K_VALUES,
                            real_dist=rr) for n, c in new.items()}
+    for name, m in results.items():                       # check the full output before ids are dropped
+        _assert_no_holdout(m["uncovered_ids"], d.splits, f"{d.name} output {name}")
     map_files = {}
     if maps and d.name == "gss":
         flags = {n: {"real_covered": results[n]["_real_covered"],
@@ -165,9 +170,6 @@ def run(inputs: list[DatasetInput], client, out_dir: Path = RESULTS, cache: Resp
         "robustness_twin": robustness_twin(twin, generated[twin.name], seed, n_boot) if twin else None,
         "runtime_seconds": round(time.perf_counter() - started, 1),
     }
-    for d in inputs:
-        for crowd in datasets[d.name]["crowds"].values():
-            _assert_no_holdout(crowd["uncovered_ids"], d.splits, f"{d.name} output")
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / "experiment1.json").write_text(json.dumps(report, indent=1), encoding="utf-8")
     (out_dir / "experiment1.md").write_text(to_markdown(report), encoding="utf-8")

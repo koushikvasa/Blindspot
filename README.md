@@ -12,4 +12,6 @@ Built for *AI Hackathon: Hack the Unreachable* (Fordham, Nov 14, 2026), Self-Imp
 - Twin-2K-500 (Toubia et al., 2025), CC BY 4.0: https://huggingface.co/datasets/LLM-Digital-Twin/Twin-2K-500
 - General Social Survey 2024 (NORC): https://gss.norc.org/get-the-data/stata.html
 
+The General Social Survey (GSS) is a project of the independent research organization NORC at the University of Chicago, with principal funding from the National Science Foundation.
+
 Place downloads in `data/raw/` (git-ignored). See `docs/DATA.md`.

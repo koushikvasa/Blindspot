@@ -12,3 +12,10 @@ node_modules/
 .next/
 .DS_Store
 results/maps/
+
+# Private run logs (respondent ids, unverified model-written text)
+results_private/
+
+# only the README is public under results/agent/
+results/agent/*
+!results/agent/README.md

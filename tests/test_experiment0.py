@@ -35,7 +35,7 @@ def test_experiment0_runs_end_to_end_on_toy_data(tmp_path):
     for m in crowds.values():
         assert 0 <= m["coverage"] <= 1 and m["coverage_ci"][0] <= m["coverage"] <= m["coverage_ci"][1]
         assert m["n_synthetic"] == len(splits["test"])
-        assert set(m["uncovered_ids"]) <= set(splits["test"])
+        assert "uncovered_ids" not in m and 0 <= m["n_uncovered"] <= len(splits["test"])
     saved = json.loads((tmp_path / "experiment0.json").read_text(encoding="utf-8"))
     assert saved["settings"]["k"] == 5 and "git_commit" in saved["settings"]
     md = (tmp_path / "experiment0.md").read_text(encoding="utf-8")

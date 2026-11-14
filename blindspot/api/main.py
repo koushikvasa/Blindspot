@@ -20,6 +20,7 @@ from pydantic import BaseModel
 
 from ..audit.api import router as audit_router
 from .live import LiveScorer, VisitorFeed
+from .room import RoomScorer
 
 ROOT = Path(__file__).resolve().parents[2]
 REAL_DIR = ROOT / "results" / "ui"
@@ -92,6 +93,32 @@ def live_answer(body: Answers, request: Request):
     return {"mock": mock, **result}
 
 
+@lru_cache(maxsize=1)
+def _room() -> RoomScorer:
+    bundle, _ = _load("live_gss")
+    return RoomScorer(bundle)
+
+
+@app.get("/api/room/questions")
+def room_questions():
+    room = _room()
+    return {"version": "room-7", "items": room.questions(), "miss_rate": room.miss_rate, "real_n": len(room.real),
+            "crowd_n": room.crowd_n}
+
+
+@app.post("/api/room/answer")
+def room_answer(body: Answers, request: Request):
+    """7-question room version, scored against the Claude crowd AND the Flashpoint panel. Nothing stored."""
+    if not _rate_ok(request.client.host if request.client else "unknown"):
+        raise HTTPException(429, "Too many tries. Please wait a minute.")
+    try:
+        result = _room().score(body.answers)
+    except ValueError as e:
+        raise HTTPException(422, str(e))
+    feed.add(result["x"], result["y"], result["verdicts"]["claude"]["covered"])
+    return result
+
+
 @app.get("/api/live/recent")
 def live_recent(after: int = 0):
     return {"points": feed.since(after)}
@@ -110,7 +137,8 @@ def health():
 
 app.include_router(audit_router)
 
-for route, page in (("/", "index.html"), ("/join", "join.html"), ("/stage", "stage.html"), ("/audit", "audit.html")):
+for route, page in (("/", "index.html"), ("/join", "join.html"), ("/stage", "stage.html"), ("/audit", "audit.html"),
+                    ("/you", "you.html")):
     app.add_api_route(route, (lambda p=page: FileResponse(WEB / p)), methods=["GET"], include_in_schema=False)
 
 app.mount("/static", StaticFiles(directory=WEB), name="static")

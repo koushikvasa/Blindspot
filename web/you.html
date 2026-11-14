@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Can AI Imagine You</title>
+<meta name="description" content="7 questions from the General Social Survey, scored live against a Claude crowd and a Flashpoint synthetic panel.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 10 10%22%3E%3Ccircle cx=%225%22 cy=%225%22 r=%224%22 fill=%22%23FF6B4A%22/%3E%3C/svg%3E">
+<link rel="preload" href="/static/vendor/fonts/fraunces-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/static/vendor/fonts/instrument-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/static/vendor/fonts/fonts.css">
+<link rel="stylesheet" href="/static/css/you.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand"><span class="dot"></span>Blindspot <span class="event">· Hack the Unreachable</span></div>
+  <div class="count num" id="count"></div>
+</header>
+<div class="progress" aria-hidden="true"><div id="bar"></div></div>
+
+<!-- backdrop the invitation opens over -->
+<main class="host" id="host">
+  <p class="host-kicker">Live experiment</p>
+  <h1 class="host-title">AI crowds miss a third of real people.<br><span>Are you one of them?</span></h1>
+</main>
+
+<!-- invitation: question 1 lives inside it, so the first tap is the first answer -->
+<div class="scrim" id="invite" hidden>
+  <section class="invite" role="dialog" aria-modal="true" aria-labelledby="invite-title">
+    <h2 id="invite-title">Can AI imagine <em>you?</em></h2>
+    <p class="invite-body">Two AIs each invented a crowd of people in the US. <b><span class="num" id="n-q">7</span> taps</b> to see if they invented you.</p>
+    <p class="invite-meta">Anonymous · answers aren't saved</p>
+    <div class="invite-q" id="invite-q"></div>
+  </section>
+</div>
+
+<section class="game" id="game" hidden></section>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<canvas id="confetti" aria-hidden="true"></canvas>
+<script src="/static/js/you.js"></script>
+</body>
+</html>

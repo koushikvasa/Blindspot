@@ -9,7 +9,7 @@ uvicorn blindspot.api.main:app --host 0.0.0.0 --port 8000
 ```
 
 - Story (presenter laptop): http://localhost:8000/
-- Phone page: http://localhost:8000/join
+- Phone page: http://localhost:8000/join (the 7-question room survey, also at `/you`; the older 20-question flow is at `/join/full`)
 - Stage (projector): http://localhost:8000/stage (optional `?map=map_gss_agent_r4` to pick the background map)
 
 ## Keys on the story page
@@ -30,7 +30,8 @@ Answers are scored in memory and never written to disk. `/api/live/reset` clears
 ## Files
 - `blindspot/api/main.py`, `blindspot/api/live.py`: API and live scoring
 - `web/index.html`, `web/js/story.js`: the six-scene story
-- `web/join.html`, `web/js/join.js`: phone flow
+- `web/you.html`, `web/js/you.js`, `web/css/you.css`, `blindspot/api/room.py`: phone flow at `/join` (7 questions, scored against the Claude crowd and the Flashpoint panel)
+- `web/join.html`, `web/js/join.js`: the older 20-question phone flow at `/join/full`
 - `web/stage.html`: projector view
 - `web/js/map.js`: the constellation renderer
 - `web/css/app.css`: all styles

@@ -11,6 +11,12 @@ def test_room_page_serves():
         assert client.get(path).status_code == 200, path
 
 
+def test_join_opens_the_room_survey_and_keeps_the_full_flow():
+    assert client.get("/join").text == client.get("/you").text
+    full = client.get("/join/full")
+    assert full.status_code == 200 and "/static/js/join.js" in full.text
+
+
 def test_room_questions_are_the_seven_short_ones():
     d = client.get("/api/room/questions").json()
     assert [it["code"] for it in d["items"]] == CODES and len(CODES) == 7

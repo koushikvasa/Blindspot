@@ -137,8 +137,9 @@ def health():
 
 app.include_router(audit_router)
 
-for route, page in (("/", "index.html"), ("/join", "join.html"), ("/stage", "stage.html"), ("/audit", "audit.html"),
-                    ("/you", "you.html")):
+# /join (the QR code in chapter 8) opens the 7-question room survey; the older 20-question flow stays at /join/full.
+for route, page in (("/", "index.html"), ("/join", "you.html"), ("/you", "you.html"), ("/join/full", "join.html"),
+                    ("/stage", "stage.html"), ("/audit", "audit.html")):
     app.add_api_route(route, (lambda p=page: FileResponse(WEB / p)), methods=["GET"], include_in_schema=False)
 
 app.mount("/static", StaticFiles(directory=WEB), name="static")

@@ -67,9 +67,19 @@ def test_scorer_identical_person_is_covered():
 
 
 def test_live_answer_rate_limited():
-    main._hits.clear()
+    main._hits.clear(); main._all_hits.clear()
     items = client.get("/api/live/questions").json()["items"]
     answers = {it["code"]: 0 for it in items}
-    codes = [client.post("/api/live/answer", json={"answers": answers}).status_code for _ in range(8)]
-    assert codes[:6] == [200] * 6 and 429 in codes[6:]
-    main._hits.clear()
+    n = main.RATE_LIMIT[0]
+    codes = [client.post("/api/live/answer", json={"answers": answers}).status_code for _ in range(n + 2)]
+    assert codes[:n] == [200] * n and 429 in codes[n:]
+    main._hits.clear(); main._all_hits.clear()
+
+
+def test_rate_limit_fits_a_room_on_one_wifi_and_has_a_global_cap(monkeypatch):
+    main._hits.clear(); main._all_hits.clear()
+    assert main.RATE_LIMIT[0] >= 40                       # a full room behind one venue address
+    assert all(main._rate_ok("10.0.0.1") for _ in range(40))
+    monkeypatch.setattr(main, "GLOBAL_LIMIT", (45, 60.0))
+    assert sum(main._rate_ok(f"10.0.1.{i}") for i in range(10)) == 5     # 40 + 5 = global cap reached
+    main._hits.clear(); main._all_hits.clear()

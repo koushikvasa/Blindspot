@@ -40,6 +40,19 @@ ROOM = {
                  SCALE("Not at all", "A little", "Somewhat", "Mostly", "Completely")),
 }
 CODES = list(ROOM)
+MIN_ANSWERED = 4
+
+
+def extreme_values(code: str) -> tuple[int, int]:
+    """The official option indices behind the first and last button of a question."""
+    choices = ROOM[code][2]
+    return choices[0][1], choices[-1][1]
+
+
+def all_extremes(answers: dict) -> bool:
+    """True when every answered question got its first or last button (the easy way to game "Unreachable")."""
+    given = [(c, answers.get(c)) for c in CODES if answers.get(c) is not None]
+    return len(given) >= MIN_ANSWERED and all(v in extreme_values(c) for c, v in given)
 
 
 def _norm(s: object) -> str:
@@ -82,6 +95,16 @@ class RoomScorer:
         self.crowd_n = {name: len(M) for name, (M, _) in crowds.items()}
         self.miss_rate = {name: self._miss_rate(s) for name, s in self.scorers.items()}
         self.real_share = [self._bucket_shares(real[:, j], it) for j, it in enumerate(self.items)]
+        self.real_extreme_share = self._real_extreme_share(real)
+
+    def _real_extreme_share(self, real: np.ndarray) -> float:
+        """Share of the real people who, mapped onto the buttons, would have tapped only end buttons."""
+        hits = 0
+        for row in real:
+            buttons = [(it["code"], self.bucket(it["code"], int(round(x * (len(it["options"]) - 1)))))
+                       for x, it in zip(row, self.items) if not np.isnan(x)]
+            hits += len(buttons) >= MIN_ANSWERED and all(b in (0, len(ROOM[c][2]) - 1) for c, b in buttons)
+        return round(hits / len(real), 3)
 
     @staticmethod
     def _shares(col: np.ndarray, k: int) -> np.ndarray:
@@ -135,4 +158,5 @@ class RoomScorer:
         why = {"question": ROOM[code][0], "topic": ROOM[code][1], "yours": choices[mine][0], "ai": choices[twin_b][0],
                "real_share": round(float(self.real_share[j][mine]), 3), "differs": mine != twin_b, "answered": answered}
         return {"version": "room-7", "verdicts": verdicts, "why": why, "x": raw["claude"]["x"], "y": raw["claude"]["y"],
-                "real_n": len(self.real), "crowd_n": self.crowd_n}
+                "real_n": len(self.real), "crowd_n": self.crowd_n,
+                "extremes": all_extremes(answers), "real_extreme_share": self.real_extreme_share}

@@ -7,6 +7,7 @@
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const pct = (v) => `${Math.round(v * 100)}%`;
+  const SOURCE = "https://github.com/koushikvasa/Blindspot/blob/main/blindspot/api/room.py";
   let items = [], answers = {}, result = null, busy = false, meta = null;
 
   function setProgress(k) {
@@ -91,14 +92,15 @@
           ${pill("Claude", v.claude)}
           ${pill("Flashpoint", v.flashpoint)}
         </div>
-        ${why ? `<p class="why">${why}</p>` : ""}
+        ${d.extremes ? `<p class="why note">You tapped only the end buttons. Just <span class="pct">${pct(d.real_extreme_share)}</span> of ${d.real_n} real survey-takers answer like that, so this verdict says more about the pattern than about you. It isn't counted on the room's screen.</p>` : why ? `<p class="why">${why}</p>` : ""}
         <p class="stat">On these ${items.length} questions, Claude's AI misses <b>${pct(v.claude.miss_rate)}</b> of real people. Flashpoint's misses <b>${pct(v.flashpoint.miss_rate)}</b>.</p>
         <div class="actions">
           <button class="btn primary" id="share">Send to a friend</button>
           <button class="btn line" id="save">Save image</button>
         </div>
         <details class="how"><summary>How it works</summary>
-          <p>Two AIs each made a crowd of pretend Americans: Claude made ${d.crowd_n.claude}, Flashpoint made ${d.crowd_n.flashpoint}. You count as "found" if someone in a crowd answers as much like you as real people like you do (your 5th closest of ${d.real_n} real people from the 2024 General Social Survey). On these ${items.length} questions Claude's crowd misses ${pct(v.claude.miss_rate)} of real people and Flashpoint's misses ${pct(v.flashpoint.miss_rate)}. Questions are shortened from the survey, so these numbers are separate from Blindspot's full 20-question results. Nothing you answered was saved.</p>
+          <p>Two AIs each made a crowd of pretend Americans: Claude made ${d.crowd_n.claude}, Flashpoint made ${d.crowd_n.flashpoint}. You count as "found" if someone in a crowd answers as much like you as real people like you do (your 5th closest of ${d.real_n} real people from the 2024 General Social Survey). On these ${items.length} questions Claude's crowd misses ${pct(v.claude.miss_rate)} of real people and Flashpoint's misses ${pct(v.flashpoint.miss_rate)}. Questions are shortened from the survey, so these numbers are separate from Blindspot's full 20-question results.</p>
+          <p>Your answers are scored in memory and thrown away. The only thing kept is an anonymous dot on the room's screen, until the session resets. <a href="${SOURCE}" target="_blank" rel="noopener">See the scoring code</a>.</p>
         </details>
       </div>`;
     $("share").onclick = share; $("save").onclick = saveImage;

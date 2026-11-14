@@ -11,6 +11,20 @@ def test_room_page_serves():
         assert client.get(path).status_code == 200, path
 
 
+def test_all_extreme_answers_are_flagged_and_kept_off_the_stage():
+    main._hits.clear(); main._all_hits.clear()
+    items = client.get("/api/room/questions").json()["items"]
+    last = main.feed.add(0.5, 0.5, True)                         # current sequence number of the stage feed
+    ends = {it["code"]: it["choices"][(-1 if k % 2 else 0)]["value"] for k, it in enumerate(items)}
+    d = client.post("/api/room/answer", json={"answers": ends}).json()
+    assert d["extremes"] is True and 0 <= d["real_extreme_share"] < 0.2
+    assert main.feed.since(last) == []                            # not counted on the projector
+    middle = {it["code"]: it["choices"][len(it["choices"]) // 2]["value"] for it in items}
+    d = client.post("/api/room/answer", json={"answers": middle}).json()
+    assert d["extremes"] is False and len(main.feed.since(last)) == 1
+    main._hits.clear(); main._all_hits.clear()
+
+
 def test_join_opens_the_room_survey_and_keeps_the_full_flow():
     assert client.get("/join").text == client.get("/you").text
     full = client.get("/join/full")

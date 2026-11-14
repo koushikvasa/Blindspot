@@ -66,17 +66,27 @@ class Answers(BaseModel):
 
 
 _hits: dict[str, deque] = defaultdict(deque)
-RATE_LIMIT = (6, 60.0)  # at most 6 submissions per visitor per minute
+_all_hits: deque = deque()
+# A whole room on one venue Wi-Fi shares one public address, so the per-address limit must fit a room;
+# the global cap keeps a script from flooding the stage.
+RATE_LIMIT = (60, 60.0)          # submissions per address per minute
+GLOBAL_LIMIT = (1500, 60.0)      # submissions from everyone per minute
+
+
+def _room_left(q: deque, limit: tuple[int, float], now: float) -> bool:
+    n, window = limit
+    while q and now - q[0] > window:
+        q.popleft()
+    return len(q) < n
 
 
 def _rate_ok(ip: str) -> bool:
-    now, (n, window) = time.time(), RATE_LIMIT
+    now = time.time()
     q = _hits[ip]
-    while q and now - q[0] > window:
-        q.popleft()
-    if len(q) >= n:
+    if not (_room_left(q, RATE_LIMIT, now) and _room_left(_all_hits, GLOBAL_LIMIT, now)):
         return False
     q.append(now)
+    _all_hits.append(now)
     return True
 
 
@@ -115,7 +125,8 @@ def room_answer(body: Answers, request: Request):
         result = _room().score(body.answers)
     except ValueError as e:
         raise HTTPException(422, str(e))
-    feed.add(result["x"], result["y"], result["verdicts"]["claude"]["covered"])
+    if not result["extremes"]:          # all-extreme answer sets are shown their verdict but kept off the stage counts
+        feed.add(result["x"], result["y"], result["verdicts"]["claude"]["covered"])
     return result
 
 

@@ -6,6 +6,8 @@ Teams increasingly use AI to simulate survey respondents ("synthetic panels", "s
 
 Built in two days for **AI Hackathon: Hack the Unreachable** (Fordham, Nov 14, 2026), Self-Improving AI track.
 
+**Status (Nov 14, 2026):** research closed (one-time holdout run done). The live demo has three parts: the research story (`/`), the audit tool for your own panel (`/audit`) and the room survey "Can AI imagine you?" (`/join`). A real-respondent study on Flashpoint is prepared but not launched.
+
 ---
 
 ## What we found
@@ -55,6 +57,12 @@ Open `/audit` (the "Audit your panel" button at the top of the story). No accoun
 
 How accurate is it with a small real sample? We checked on the GSS: 20 draws each of 25, 50, 100 and 200 real people, three AI crowds, compared with the same crowd's true coverage on 334 held-out real people. The typical error of the missed-% is about ±15 points at 25 people, ±11 at 50, ±5 at 100 and ±5 at 200, so the report shows the expected error for your sample size and warns below 100 people. The "looks realistic" number reads low with small samples and is shown with its own error. Full tables: [results/audit_validation.md](results/audit_validation.md). Limits: 5 MB per file, 5,000 rows, 100 columns; the endpoint is rate-limited. The engine is `blindspot/audit/` (numpy only, no pandas); files are posted as JSON text, not multipart, so nothing is ever spooled to a temp file.
 
+## Try it in the room
+
+`/join` (the QR code in chapter 8 of the story) asks 7 quick questions and says, live, whether the Claude crowd and Flashpoint's synthetic panel have anyone like you: **Unreachable** (neither), **Half-reachable** (one) or **Imaginable** (both). Same coverage rule as above, against the 334 real test-split GSS respondents. Answers are scored in memory and thrown away; the projector view (`/stage`) shows only an anonymous dot.
+
+On these 7 questions the Claude crowd misses 69% of real people and Flashpoint's panel 43%. That is the 7-question room version, with shortened wording and 5-button scales, and is not comparable with the 20-question results above. Answer sets made only of end buttons (3% of real people answer like that) get an honest note and are left off the room's counts. The older 20-question flow is at `/join/full`.
+
 ## What's in the repo
 
 ```
@@ -65,7 +73,8 @@ blindspot/generators  baselines (shuffled answers, Gaussian copula, other real p
                       Claude personas (cached), Flashpoint synthetic panel loader
 blindspot/agent       the repair loops we tried (kept for transparency)
 blindspot/eval        experiments 0–2, bake-off, H4c/H4d, Flashpoint audit, final holdout
-blindspot/api, web    the demo: story, live "can the AI imagine you?" phone page, stage view
+blindspot/audit       the /audit engine: CSV parsing, column matching, small-sample coverage estimate, report
+blindspot/api, web    the demo: story (/), audit (/audit), room survey (/join, room.py), stage view (/stage)
 results/              every experiment's tables (.md) and numbers (.json)
 docs/                 data notes, metrics, Flashpoint notes, project context
 handovers/            the step-by-step build specs, including the ones that failed
@@ -82,6 +91,8 @@ python -m blindspot.eval.experiment0      # no API calls
 python -m blindspot.eval.experiment1      # cached Claude crowd (~$0.25 first run)
 uvicorn blindspot.api.main:app --port 8000   # demo at http://localhost:8000
 ```
+
+Pages: `/` story, `/audit` audit your own panel, `/join` room survey (phones), `/stage` projector view. Phones in the room need the same Wi-Fi or a tunnel; see `web/README_UI.md`. The demo itself needs no API keys.
 
 ## Method and honesty notes
 
@@ -112,6 +123,6 @@ Raw data is not redistributed here; see `docs/DATA.md` to download it.
 
 ## Credits
 
-Koushik Vasa ([koushikvasa.github.io](https://koushikvasa.github.io)). Built with Claude (Anthropic) and Claude Code.
+Koushik Vasa ([koushikvasa.github.io](https://koushikvasa.github.io)). Room survey (`/join`) by Srini. Built with Claude (Anthropic) and Claude Code.
 
 License: MIT

@@ -1,4 +1,4 @@
-# Blindspot demo server: story page, live join page, stage view.
+# Blindspot demo server: story page, live join page, stage view, and the /audit product page.
 # Only the demo pieces are copied; the research code and raw data stay out of the image.
 FROM python:3.12-slim
 
@@ -9,6 +9,8 @@ RUN pip install --no-cache-dir "fastapi>=0.115" "uvicorn[standard]>=0.30" "numpy
 
 COPY blindspot/__init__.py blindspot/__init__.py
 COPY blindspot/api blindspot/api
+# the audit engine (numpy only) with its calibration table and the two sample CSVs
+COPY blindspot/audit blindspot/audit
 COPY web web
 # results/ui holds the exported (id-free) demo data; if it is missing the app falls back to web/mock
 COPY results/ui results/ui

@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Audit your panel · Blindspot</title>
+<meta name="description" content="Upload your synthetic survey panel and a small real sample. Blindspot shows which real people the AI panel misses, in seconds. Nothing is stored.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 10 10%22%3E%3Ccircle cx=%225%22 cy=%225%22 r=%224%22 fill=%22%23FF6B4A%22/%3E%3C/svg%3E">
+<link rel="preload" href="/static/vendor/fonts/fraunces-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/static/vendor/fonts/instrument-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/static/vendor/fonts/fonts.css">
+<link rel="stylesheet" href="/static/css/audit.css">
+</head>
+<body>
+<header class="bar">
+  <a class="brand" href="/"><span class="dot"></span><span>Blindspot</span></a>
+  <a class="back" href="/">The research</a>
+</header>
+
+<main class="wrap">
+  <ol class="steps" id="steps" aria-label="Steps">
+    <li data-s="1"><span>1</span>Upload</li><li data-s="2"><span>2</span>Match</li><li data-s="3"><span>3</span>Report</li>
+  </ol>
+  <div class="error" id="error" role="alert" hidden></div>
+
+  <!-- STEP 1 -->
+  <section id="s1" class="step">
+    <p class="kicker">Audit your panel</p>
+    <h1>Does your AI panel <em>miss real people?</em></h1>
+    <p class="lede">Bring a synthetic panel and a small real sample answered on the same questions. You get a plain-words report in seconds. No account, no install, nothing stored: your files are read in memory and forgotten.</p>
+    <div class="drops">
+      <label class="drop" id="dropPanel">
+        <input type="file" accept=".csv,.tsv,.txt,text/csv" id="filePanel">
+        <span class="dtitle">Your AI panel</span>
+        <span class="dtext">CSV from Flashpoint or any other tool. One row per synthetic respondent.</span>
+        <span class="dfile" id="namePanel">Drop a file or click to choose</span>
+      </label>
+      <label class="drop" id="dropReal">
+        <input type="file" accept=".csv,.tsv,.txt,text/csv" id="fileReal">
+        <span class="dtitle">Your real sample</span>
+        <span class="dtext">CSV with 25 to 500 real respondents on the same questions (100 or more is best).</span>
+        <span class="dfile" id="nameReal">Drop a file or click to choose</span>
+      </label>
+    </div>
+    <div class="actions">
+      <button class="btn primary" id="toMatch" disabled>Continue</button>
+      <button class="btn ghost" id="trySample">Try it with sample data</button>
+    </div>
+    <p class="fine">Limits: 5 MB per file, 5,000 rows, 100 columns. The sample is a Flashpoint synthetic panel and 100 random respondents of the General Social Survey (GSS), a project of the independent research organization NORC at the University of Chicago, with principal funding from the National Science Foundation.</p>
+  </section>
+
+  <!-- STEP 2 -->
+  <section id="s2" class="step" hidden>
+    <p class="kicker">Step 2</p>
+    <h1>Check the <em>matching</em></h1>
+    <p class="lede" id="matchLede"></p>
+    <div class="notice" id="matchNotes"></div>
+    <div class="tablewrap"><table class="match" id="matchTable"></table></div>
+    <div class="actions">
+      <button class="btn primary" id="runAudit">Run the audit</button>
+      <button class="btn ghost" id="backTo1">Back</button>
+    </div>
+  </section>
+
+  <!-- LOADING -->
+  <section id="busy" class="step busy" hidden aria-live="polite"><div><div class="spinner"></div><p id="busyText">Comparing your panel with real people…</p></div></section>
+
+  <!-- STEP 3 -->
+  <section id="s3" class="step" hidden>
+    <p class="kicker">Your audit</p>
+    <h1 id="repHead"></h1>
+    <div class="bigs">
+      <div class="big"><div class="n miss num" id="repMissed">–</div><div class="l" id="repMissedL">of real people missed</div></div>
+      <div class="big"><div class="n syn num" id="repReal">–</div><div class="l" id="repRealL">of AI respondents look realistic</div></div>
+    </div>
+    <div class="notice warn" id="repWarn" hidden></div>
+    <div class="card rec" id="repRec"></div>
+    <div class="two">
+      <div class="card mapcard"><div class="mapbox"><canvas id="repMap" aria-label="Map of real people and the AI panel"></canvas></div>
+        <p class="legend"><span class="k real"></span>real person <span class="k syn"></span>AI respondent <span class="k miss"></span>real person nobody in the AI panel resembles</p></div>
+      <div class="card"><h2>Where the AI panel bunches</h2><div id="repBunch"></div></div>
+    </div>
+    <div class="card"><h2>Biggest differences in answers</h2><div id="repGaps"></div></div>
+    <div class="card"><h2>Three real people the AI panel missed</h2><div class="ex" id="repEx"></div></div>
+    <div class="card"><h2>Download</h2>
+      <div class="actions tight"><button class="btn primary" id="dlReport">Report (HTML)</button><button class="btn ghost" id="dlRepaired">Repaired crowd (CSV)</button></div>
+      <p class="fine" id="repairedNote"></p></div>
+    <details class="card"><summary>How to read this</summary><p class="fine" id="repHow"></p><p class="fine" id="repCols"></p></details>
+    <div class="actions"><button class="btn ghost" id="again">Audit another panel</button></div>
+  </section>
+</main>
+
+<script src="/static/js/common.js"></script>
+<script src="/static/js/map.js"></script>
+<script src="/static/js/audit.js"></script>
+</body>
+</html>

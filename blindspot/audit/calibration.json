@@ -1,0 +1,60 @@
+{
+ "estimator": {
+  "k": 3,
+  "corrected": true,
+  "power": 0.75
+ },
+ "n_ref": 334,
+ "k_ref": 5,
+ "min_reliable_n": 100,
+ "precision_estimator": {
+  "k": 3,
+  "corrected": false,
+  "power": 1.0
+ },
+ "precision_error_table": {
+  "25": {
+   "bias": 0.044,
+   "sd": 0.0691,
+   "rmse": 0.0814
+  },
+  "50": {
+   "bias": -0.0282,
+   "sd": 0.0552,
+   "rmse": 0.0616
+  },
+  "100": {
+   "bias": -0.0612,
+   "sd": 0.0582,
+   "rmse": 0.0841
+  },
+  "200": {
+   "bias": -0.0873,
+   "sd": 0.0655,
+   "rmse": 0.1088
+  }
+ },
+ "error_table": {
+  "25": {
+   "bias": 0.0332,
+   "sd": 0.1467,
+   "rmse": 0.1492
+  },
+  "50": {
+   "bias": 0.0072,
+   "sd": 0.1127,
+   "rmse": 0.112
+  },
+  "100": {
+   "bias": -0.0077,
+   "sd": 0.0523,
+   "rmse": 0.0525
+  },
+  "200": {
+   "bias": -0.015,
+   "sd": 0.0486,
+   "rmse": 0.0505
+  }
+ },
+ "validated_on": "GSS 2024, 20 live items, test split truth, pool samples, 20 draws each"
+}

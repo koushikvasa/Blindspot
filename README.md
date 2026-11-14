@@ -43,6 +43,18 @@ A coverage check every synthetic panel should ship with:
 
 This fits the "synthetic first, escalate to real" workflow: Blindspot tells you when synthetic is enough and whom to ask when it is not.
 
+## Use it
+
+Open `/audit` (the "Audit your panel" button at the top of the story). No account, no install, nothing stored: your files are read in memory and forgotten.
+
+1. **Upload** your AI panel (CSV, from Flashpoint or any tool) and a small real sample (CSV, 25–500 people, 100 or more is best). Or press "Try it with sample data" (a Flashpoint panel and 100 random GSS respondents).
+2. **Match**: Blindspot pairs the question columns by header (small spelling differences are fine), shows the answer options it found, and ignores ids, timestamps and other metadata automatically (it tells you which). Untick anything you want left out.
+3. **Report**: the share of real people your panel misses, how many AI respondents look realistic, a map, questions where the AI panel bunches on one answer, the five biggest differences in answers, three missed real people next to their closest AI person, and a plain-words recommendation. Download it as one self-contained HTML file, or download a repaired crowd (your panel plus statistical augmentation fitted on your real sample; clearly labelled as containing real-respondent information).
+
+![The audit report](docs/img/audit-report.png)
+
+How accurate is it with a small real sample? We checked on the GSS: 20 draws each of 25, 50, 100 and 200 real people, three AI crowds, compared with the same crowd's true coverage on 334 held-out real people. The typical error of the missed-% is about ±15 points at 25 people, ±11 at 50, ±5 at 100 and ±5 at 200, so the report shows the expected error for your sample size and warns below 100 people. The "looks realistic" number reads low with small samples and is shown with its own error. Full tables: [results/audit_validation.md](results/audit_validation.md). Limits: 5 MB per file, 5,000 rows, 100 columns; the endpoint is rate-limited. The engine is `blindspot/audit/` (numpy only, no pandas); files are posted as JSON text, not multipart, so nothing is ever spooled to a temp file.
+
 ## What's in the repo
 
 ```

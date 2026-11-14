@@ -18,6 +18,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
+from ..audit.api import router as audit_router
 from .live import LiveScorer, VisitorFeed
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -107,7 +108,9 @@ def health():
     return {"ok": True, "real_files": sorted(p.stem for p in REAL_DIR.glob("*.json")) if REAL_DIR.exists() else []}
 
 
-for route, page in (("/", "index.html"), ("/join", "join.html"), ("/stage", "stage.html")):
+app.include_router(audit_router)
+
+for route, page in (("/", "index.html"), ("/join", "join.html"), ("/stage", "stage.html"), ("/audit", "audit.html")):
     app.add_api_route(route, (lambda p=page: FileResponse(WEB / p)), methods=["GET"], include_in_schema=False)
 
 app.mount("/static", StaticFiles(directory=WEB), name="static")

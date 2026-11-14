@@ -1,25 +1,39 @@
-/* Room version 2 of "can the AI imagine you?".
-   Changes from v1 come from 8 simulated testers (busy judge, Gen Z student, privacy engineer, retiree, gamer,
-   tired attendee, non-native speaker, survey methodologist): they read ~20-30% of the words, satisficed on 0-10 rows,
-   and skipped the fine print. So: 7 questions, 3-6 words each, 5 big labelled buttons, a one-line verdict. */
+/* Adaptive room survey: "can the AI imagine you?".
+   Each next question comes from the server (blindspot/api/adaptive.py): a strong answer leads one rung deeper on the
+   same topic (laddering), otherwise the question where people like you split most. Seven taps, then the verdict and an
+   optional AI follow-up question about your most distinctive answer. Answers are scored in memory and not stored. */
 (() => {
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const pct = (v) => `${Math.round(v * 100)}%`;
-  const SOURCE = "https://github.com/koushikvasa/Blindspot/blob/main/blindspot/api/room.py";
-  let items = [], answers = {}, result = null, busy = false, meta = null;
+  const SOURCE = "https://github.com/koushikvasa/Blindspot/blob/main/blindspot/api/adaptive.py";
+  let N = 7, items = [], answers = {}, result = null, busy = false;
+
+  const path = () => items.map((it) => it.code);
+  async function post(url, body) {
+    const r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    let d = {};
+    try { d = await r.json(); } catch (_) { /* empty body */ }
+    if (!r.ok) throw new Error(typeof d.detail === "string" ? d.detail : "Something went wrong");
+    return d;
+  }
 
   function setProgress(k) {
-    $("bar").style.width = `${(k / items.length) * 100}%`;
-    $("count").textContent = k < items.length ? `${k + 1} of ${items.length}` : "";
+    $("bar").style.width = `${(k / N) * 100}%`;
+    $("count").textContent = k < N ? `${k + 1} of ${N}` : "";
+  }
+  function tease(it, k) {
+    const left = N - k;
+    const togo = `${left === 1 ? "Last one" : `${left} to go`} → your verdict`;
+    return it.reason === "deeper" ? `<p class="tease deeper">Going deeper on ${esc(it.family_name)} · ${togo}</p>` : `<p class="tease num">${togo}</p>`;
   }
   function questionHtml(k, inInvite) {
-    const it = items[k], left = items.length - k;
+    const it = items[k];
     const opts = it.choices.map((c) => `<button class="opt${answers[it.code] === c.value ? " on" : ""}" data-v="${c.value}">${esc(c.label)}</button>`).join("");
     return `
       <div class="${inInvite ? "" : "slide"}">
-        ${inInvite ? "" : `<p class="tease num">${left === 1 ? "Last one" : `${left} to go`} → your verdict</p>`}
+        ${inInvite ? "" : tease(it, k)}
         <h2 class="qtext">${esc(it.question)}</h2>
         <div class="opts n${it.choices.length}" role="group" aria-label="Answers">${opts}</div>
         <div class="qfoot">${k > 0 ? `<button class="back" data-back>← Back</button>` : "<span></span>"}<button class="skip" data-skip>Skip</button></div>
@@ -44,15 +58,37 @@
     bind($("game"), k);
     window.scrollTo({ top: 0 });
   }
-  function pick(k, v, el) {
+  function failed(message, retry) {
+    $("invite").hidden = true; $("host").hidden = true; $("game").hidden = false;
+    $("game").innerHTML = `<div class="decode"><h2 class="qtext">That didn't go through</h2><p id="err"></p>
+      <div class="actions"><button class="btn line" id="b">Back</button><button class="btn line" id="t">Try again</button></div></div>`;
+    $("err").textContent = message; $("b").onclick = () => show(Math.max(0, items.length - 1)); $("t").onclick = retry;
+  }
+
+  // Answering re-plans everything after this question (a changed answer can change the next questions).
+  async function pick(k, v, el) {
     if (busy) return;
+    busy = true;
+    items = items.slice(0, k + 1);
+    const keep = new Set(path());
+    answers = Object.fromEntries(Object.entries(answers).filter(([c]) => keep.has(c)));
     answers[items[k].code] = v;
     if (el) { el.parentElement.querySelectorAll(".opt").forEach((b) => b.classList.remove("on")); el.classList.add("on"); }
-    busy = true;
-    setTimeout(() => { busy = false; k + 1 < items.length ? show(k + 1) : submit(); }, reduced ? 0 : 200);
+    const pause = new Promise((r) => setTimeout(r, reduced ? 0 : 200));
+    if (k + 1 >= N) { await pause; busy = false; submit(); return; }
+    try {
+      const [d] = await Promise.all([post("/api/adaptive/next", { answers, path: path() }), pause]);
+      busy = false;
+      if (d.done || !d.question) { submit(); return; }
+      items.push(d.question);
+      show(k + 1);
+    } catch (e) {
+      busy = false;
+      failed(e.message, () => pick(k, v));
+    }
   }
-  document.addEventListener("keydown", (e) => {          // 1-5 pick answers on a laptop
-    if (e.metaKey || e.ctrlKey || e.altKey || !/^[1-9]$/.test(e.key)) return;
+  document.addEventListener("keydown", (e) => {          // 1-5 pick answers on a laptop (not while typing)
+    if (e.metaKey || e.ctrlKey || e.altKey || !/^[1-9]$/.test(e.key) || /TEXTAREA|INPUT/.test(e.target.tagName)) return;
     const root = !$("invite").hidden ? $("invite-q") : !$("game").hidden ? $("game") : null;
     const opt = root && root.querySelectorAll(".opt")[Number(e.key) - 1];
     if (opt) opt.click();
@@ -62,14 +98,10 @@
     $("bar").style.width = "100%"; $("count").textContent = "";
     $("game").innerHTML = `<div class="decode"><div class="scanner"></div><p>Looking for you in two AI crowds…</p></div>`;
     try {
-      const req = fetch("/api/room/answer", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ answers }) })
-        .then(async (r) => { const d = await r.json(); if (!r.ok) throw new Error(d.detail || "Something went wrong"); return d; });
-      const [d] = await Promise.all([req, new Promise((r) => setTimeout(r, reduced ? 0 : 1600))]);
-      answers = {}; result = d; verdict(d);
+      const [d] = await Promise.all([post("/api/adaptive/answer", { answers, path: path() }), new Promise((r) => setTimeout(r, reduced ? 0 : 1600))]);
+      result = d; verdict(d);
     } catch (e) {
-      $("game").innerHTML = `<div class="decode"><h2 class="qtext">That didn't go through</h2><p id="err"></p>
-        <div class="actions"><button class="btn line" id="b">Back</button><button class="btn line" id="t">Try again</button></div></div>`;
-      $("err").textContent = e.message; $("b").onclick = () => show(items.length - 1); $("t").onclick = submit;
+      failed(e.message, submit);
     }
   }
 
@@ -79,32 +111,76 @@
     if (!c || !f) return { cls: "half", word: "Half‑reachable.", sub: `${f ? "Flashpoint" : "Claude"}'s AI found you. ${f ? "Claude" : "Flashpoint"}'s didn't.` };
     return { cls: "imaginable", word: "Imaginable.", sub: "Both AIs found someone like you. You're the person AI already gets." };
   }
+  // The rarest answer the visitor gave, as the "why" line (real share of the same button).
+  function rarest(d) {
+    const given = d.path.filter((s) => s.answer && s.real_share != null);
+    return given.length ? given.reduce((a, b) => (b.real_share < a.real_share ? b : a)) : null;
+  }
+  function pathHtml(d) {
+    const deep = {};
+    d.path.forEach((s) => { if (s.reason === "deeper") deep[s.family_name] = (deep[s.family_name] || 1) + 1; });
+    const went = Object.entries(deep).map(([f, n]) => `${n} questions deep on <b>${esc(f)}</b>`).join(" and ");
+    const steps = d.path.map((s) => `<li class="${s.reason}"><span class="q">${esc(s.question)}</span><span class="a">${s.answer ? esc(s.answer) : "skipped"}${s.real_share != null && s.answer ? ` <em>${pct(s.real_share)} of real people</em>` : ""}</span></li>`).join("");
+    return `<details class="how pathbox"><summary>Your path${went ? `: ${went}` : ""}</summary><ol class="path">${steps}</ol></details>`;
+  }
   function verdict(d) {
-    const o = outcome(d), w = d.why, v = d.verdicts;
-    const why = w.differs ? `You said <b>“${esc(w.yours)}”</b> to ${esc(w.topic)}. ${w.real_share < 0.15 ? "Only " : ""}<span class="pct">${pct(w.real_share)}</span> of ${d.real_n} real survey-takers did${w.real_share < 0.15 ? "" : " too"}.` : "";
-    const pill = (name, r) => `<span class="chip ${r.covered ? "cov" : "miss"}">${r.covered ? "✓" : "✕"} ${name}'s AI ${r.covered ? "found you" : "didn't find you"}</span>`;
+    const o = outcome(d), v = d.verdicts, r = rarest(d);
+    const why = r ? `Your rarest answer: <b>“${esc(r.answer)}”</b> to <b>${esc(r.question.replace(/\?$/, ""))}</b>. ${r.real_share < 0.15 ? "Only " : ""}<span class="pct">${pct(r.real_share)}</span> of ${d.real_n} real survey-takers said that${r.real_share < 0.15 ? "" : " too"}.` : "";
+    const pill = (name, x) => `<span class="chip ${x.covered ? "cov" : "miss"}">${x.covered ? "✓" : "✕"} ${name}'s AI ${x.covered ? "found you" : "didn't find you"}</span>`;
     $("count").textContent = "Verdict";
     $("game").innerHTML = `
       <div class="verdict">
         <h1 class="v-word ${o.cls}">${o.word}</h1>
         <p class="v-sub">${esc(o.sub)}</p>
-        <div class="chips">
-          ${pill("Claude", v.claude)}
-          ${pill("Flashpoint", v.flashpoint)}
-        </div>
+        <div class="chips">${pill("Claude", v.claude)}${pill("Flashpoint", v.flashpoint)}</div>
         ${d.extremes ? `<p class="why note">You tapped only the end buttons. Just <span class="pct">${pct(d.real_extreme_share)}</span> of ${d.real_n} real survey-takers answer like that, so this verdict says more about the pattern than about you. It isn't counted on the room's screen.</p>` : why ? `<p class="why">${why}</p>` : ""}
-        <p class="stat">On these ${items.length} questions, Claude's AI misses <b>${pct(v.claude.miss_rate)}</b> of real people. Flashpoint's misses <b>${pct(v.flashpoint.miss_rate)}</b>.</p>
+        <p class="stat">On your ${d.path.length} questions, Claude's AI misses <b>${pct(v.claude.miss_rate)}</b> of real people. Flashpoint's misses <b>${pct(v.flashpoint.miss_rate)}</b>.</p>
+        ${d.followup ? `<div class="deeper-box" id="fu"><button class="btn line" id="fuStart">Go one layer deeper</button>
+          <p class="fine">Claude asks you one question about your answers. Your taps (not your name) are sent to Anthropic's API to write it; nothing is stored here.</p></div>` : ""}
         <div class="actions">
           <button class="btn primary" id="share">Send to a friend</button>
           <button class="btn line" id="save">Save image</button>
         </div>
+        ${pathHtml(d)}
         <details class="how"><summary>How it works</summary>
-          <p>Two AIs each made a crowd of pretend Americans: Claude made ${d.crowd_n.claude}, Flashpoint made ${d.crowd_n.flashpoint}. You count as "found" if someone in a crowd answers as much like you as real people like you do (your 5th closest of ${d.real_n} real people from the 2024 General Social Survey). On these ${items.length} questions Claude's crowd misses ${pct(v.claude.miss_rate)} of real people and Flashpoint's misses ${pct(v.flashpoint.miss_rate)}. Questions are shortened from the survey, so these numbers are separate from Blindspot's full 20-question results.</p>
-          <p>Your answers are scored in memory and thrown away. The only thing kept is an anonymous dot on the room's screen, until the session resets. <a href="${SOURCE}" target="_blank" rel="noopener">See the scoring code</a>.</p>
+          <p>Every question came from the same 20 questions of the 2024 General Social Survey. A strong answer (the first or last button) leads to the next question on the same topic, one step from the concrete toward what it means to you (the "laddering" interview method). Otherwise you get the question where the real people most like you so far disagree most (the idea behind adaptive testing).</p>
+          <p>Two AIs each made a crowd of pretend Americans: Claude made ${d.crowd_n.claude}, Flashpoint made ${d.crowd_n.flashpoint}. You count as "found" if someone in a crowd answers your questions as much like you as real people like you do (your 5th closest of ${d.real_n} real people). The miss rates are for the exact questions you got, so they differ from person to person and from Blindspot's full 20-question results.</p>
+          <p>Your answers are scored in memory and thrown away. The only thing kept is an anonymous dot on the room's screen, until the session resets. <a href="${SOURCE}" target="_blank" rel="noopener">See the code</a>.</p>
         </details>
       </div>`;
     $("share").onclick = share; $("save").onclick = saveImage;
+    if (d.followup) $("fuStart").onclick = followUp;
     if (o.cls !== "imaginable") confetti(o.cls === "unreachable" ? ["#ff6b4a", "#ffc24b", "#f4f0e8"] : ["#ffc24b", "#3ee0c6", "#f4f0e8"]);
+  }
+
+  async function followUp() {
+    const box = $("fu");
+    box.innerHTML = `<p class="fine">Claude is reading your answers…</p>`;
+    try {
+      const d = await post("/api/adaptive/followup", { answers, path: path() });
+      box.innerHTML = `<p class="fu-q"></p>
+        <textarea id="fuReply" maxlength="400" rows="3" placeholder="A sentence or two is plenty"></textarea>
+        <div class="actions"><button class="btn primary" id="fuSend">Send</button><button class="btn line" id="fuSkip">Skip</button></div>`;
+      box.querySelector(".fu-q").textContent = d.question;
+      $("fuSkip").onclick = () => { box.innerHTML = `<p class="fine">No problem.</p>`; };
+      $("fuSend").onclick = () => reflect(d.question);
+      $("fuReply").focus();
+    } catch (e) {
+      box.innerHTML = `<p class="fine">The AI follow-up isn't available right now.</p>`;
+    }
+  }
+  async function reflect(question) {
+    const box = $("fu"), reply = $("fuReply").value.trim();
+    if (!reply) { $("fuReply").focus(); return; }
+    box.querySelector(".actions").innerHTML = `<p class="fine">Thinking…</p>`;
+    try {
+      const d = await post("/api/adaptive/reflect", { answers, path: path(), question, reply });
+      box.innerHTML = `<p class="fu-q"></p><p class="fu-a"></p><p class="fine">Nothing you typed was saved.</p>`;
+      box.querySelector(".fu-q").textContent = question;
+      box.querySelector(".fu-a").textContent = d.reflection;
+    } catch (e) {
+      box.innerHTML = `<p class="fine">Thanks. The AI reply isn't available right now.</p>`;
+    }
   }
 
   function shareText() {
@@ -113,7 +189,7 @@
   }
   function toast(msg) { const t = $("toast"); t.textContent = msg; t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 2200); }
   async function share() {
-    const text = shareText(), url = `${location.origin}/you`;
+    const text = shareText(), url = `${location.origin}/join`;
     try {
       if (navigator.share) { await navigator.share({ title: "Can AI imagine you?", text, url }); return; }
       await navigator.clipboard.writeText(`${text} ${url}`); toast("Copied. Paste it anywhere.");
@@ -138,7 +214,7 @@
       x.fillStyle = col; x.fillText(label, cx + 36, 664); cx += w + 24;
     }
     x.fillStyle = "#8a92aa"; x.font = `400 28px ${sans}`;
-    x.fillText("Blindspot · Hack the Unreachable", P, H - 110); x.fillText(`${location.host}/you`, P, H - 70);
+    x.fillText("Blindspot · Hack the Unreachable", P, H - 110); x.fillText(`${location.host}/join`, P, H - 70);
     const a = document.createElement("a"); a.download = "can-ai-imagine-me.png"; a.href = c.toDataURL("image/png"); a.click();
     toast("Image saved.");
   }
@@ -158,7 +234,7 @@
     })();
   }
 
-  fetch("/api/room/questions", { cache: "no-store" }).then((r) => (r.ok ? r.json() : Promise.reject()))
-    .then((d) => { meta = d; items = d.items; $("n-q").textContent = items.length; setTimeout(openInvite, reduced ? 0 : 300); })
+  fetch("/api/adaptive/start", { cache: "no-store" }).then((r) => (r.ok ? r.json() : Promise.reject()))
+    .then((d) => { N = d.n_questions; items = [d.question]; $("n-q").textContent = N; setTimeout(openInvite, reduced ? 0 : 300); })
     .catch(() => { document.querySelector(".host-title").textContent = "Live mode is offline. Reload in a moment."; });
 })();

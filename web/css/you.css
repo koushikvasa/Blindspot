@@ -129,6 +129,21 @@ button { font-family: inherit; }
 .verdict .why.note { border-left: 3px solid var(--gold); padding-left: 14px; text-align: left; }
 .invite-meta a, .how a { color: var(--muted); text-decoration: underline; text-underline-offset: 3px; }
 .invite-meta a:hover, .how a:hover { color: var(--text); }
+/* adaptive: "going deeper" label, the visitor's path, the AI follow-up */
+.tease.deeper { color: var(--syn); font-weight: 700; }
+.pathbox summary b { color: var(--text); }
+ol.path { list-style: none; padding: 0; margin: 12px 0 0; text-align: left; }
+ol.path li { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 15px; }
+ol.path li.deeper .q::before { content: "↳ "; color: var(--syn); }
+ol.path .a { color: var(--text); text-align: right; } ol.path .a em { display: block; color: var(--faint); font-style: normal; font-size: 13px; }
+.deeper-box { margin: 0 auto 22px; max-width: 34em; padding: 16px 18px; border-radius: 18px; background: var(--panel); border: 1px solid var(--line); text-align: left; }
+.deeper-box .fine { color: var(--faint); font-size: 13px; margin: 8px 0 0; }
+.deeper-box .fu-q { font-family: var(--display); font-size: clamp(19px, .5vw + 15px, 24px); color: var(--text); margin: 0 0 12px; }
+.deeper-box .fu-a { color: var(--muted); font-size: 17px; margin: 0; }
+.deeper-box textarea { width: 100%; box-sizing: border-box; border-radius: 12px; border: 1px solid var(--line-2, var(--line)); background: rgba(255,255,255,.04);
+  color: var(--text); font: inherit; font-size: 16px; padding: 12px; resize: vertical; }
+.deeper-box textarea:focus { outline: 2px solid var(--syn); outline-offset: 1px; }
+.deeper-box .actions { margin-top: 12px; }
 .why .pct { color: var(--gold); font-weight: 800; }
 .why .lbl { display: block; color: var(--gold); font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 6px; }
 .crowds { display: grid; gap: 14px; animation: rise .6s .15s cubic-bezier(.2,.9,.3,1.1) both; }

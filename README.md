@@ -61,7 +61,16 @@ How accurate is it with a small real sample? We checked on the GSS: 20 draws eac
 
 `/join` (the QR code in chapter 8 of the story) asks 7 quick questions and says, live, whether the Claude crowd and Flashpoint's synthetic panel have anyone like you: **Unreachable** (neither), **Half-reachable** (one) or **Imaginable** (both). Same coverage rule as above, against the 334 real test-split GSS respondents. Answers are scored in memory and thrown away; the projector view (`/stage`) shows only an anonymous dot.
 
-On these 7 questions the Claude crowd misses 69% of real people and Flashpoint's panel 43%. That is the 7-question room version, with shortened wording and 5-button scales, and is not comparable with the 20-question results above. Answer sets made only of end buttons (3% of real people answer like that) get an honest note and are left off the room's counts. The older 20-question flow is at `/join/full`.
+**The questions adapt to you** (`blindspot/api/adaptive.py`), drawn from the 20 live GSS items so every answer can still be scored against both AI crowds:
+
+- Everyone starts with the same two questions (driverless cars, trusting people).
+- A strong answer (first or last button) leads one rung deeper on that topic, from concrete experience to personal stake to values: driverless car, then a robot doing *your* surgery, then AI taking jobs, then whether tech does more harm than good. This is the laddering interview method (Reynolds & Gutman 1988). At most 4 questions per topic.
+- Otherwise the next question is the one where the 40 real people most like you so far disagree most, the idea behind adaptive testing (Toubia, Simester, Hauser & Dahan 2003, *Marketing Science*).
+- It stays at 7 questions because longer surveys lose finishers (Galesic & Bosnjak 2009, *Public Opinion Quarterly*; a 10-question version also tested worse with simulated testers).
+
+The verdict shows your path, how many real people gave each of your answers, and the crowds' miss rates on exactly your questions. Those numbers differ per path and are not comparable with the 20-question results above. Answer sets made only of end buttons get an honest note and are left off the room's counts.
+
+**Optional AI follow-up.** After the verdict, "Go one layer deeper" asks Claude for one question about your most distinctive answer and a two-sentence reply to what you write (conversational follow-ups get deeper answers: Xiao et al. 2020, *ACM TOCHI*). Your taps and your typed reply go to the Anthropic API; nothing is stored on the server, and the response cache is in memory only. Server settings: `ANTHROPIC_API_KEY` (without it the button does not appear), `FOLLOWUP_MODEL` (default `claude-opus-5-5`), `FOLLOWUP_DAILY_USD` (spend cap, default 5). The fixed 7-question version's scorer remains in `blindspot/api/room.py`; the older 20-question flow is at `/join/full`.
 
 ## What's in the repo
 

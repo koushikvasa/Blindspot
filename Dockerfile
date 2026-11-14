@@ -5,7 +5,7 @@ FROM python:3.12-slim
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 WORKDIR /app
 
-RUN pip install --no-cache-dir "fastapi>=0.115" "uvicorn[standard]>=0.30" "numpy>=1.26" "pydantic>=2.7"
+RUN pip install --no-cache-dir "fastapi>=0.115" "uvicorn[standard]>=0.30" "numpy>=1.26" "pydantic>=2.7" "anthropic>=2.8"
 
 COPY blindspot/__init__.py blindspot/__init__.py
 COPY blindspot/api blindspot/api

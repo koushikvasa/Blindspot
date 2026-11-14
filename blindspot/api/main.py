@@ -16,9 +16,11 @@ from collections import defaultdict, deque
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from ..audit.api import router as audit_router
+from .adaptive import N_QUESTIONS, AdaptivePlanner
+from .followup import REPLY_MAX, FollowUp
 from .live import LiveScorer, VisitorFeed
 from .room import RoomScorer
 
@@ -128,6 +130,84 @@ def room_answer(body: Answers, request: Request):
     if not result["extremes"]:          # all-extreme answer sets are shown their verdict but kept off the stage counts
         feed.add(result["x"], result["y"], result["verdicts"]["claude"]["covered"])
     return result
+
+
+@lru_cache(maxsize=1)
+def _planner() -> AdaptivePlanner:
+    bundle, _ = _load("live_gss")
+    return AdaptivePlanner(bundle)
+
+
+@lru_cache(maxsize=1)
+def _followup() -> FollowUp:
+    return FollowUp()
+
+
+class PathBody(BaseModel):
+    answers: dict[str, int | None] = Field(default_factory=dict)
+    path: list[str] = Field(default_factory=list, max_length=N_QUESTIONS)
+
+
+class ReflectBody(PathBody):
+    question: str = Field(max_length=300)
+    reply: str = Field(max_length=REPLY_MAX)
+
+
+def _guard(request: Request) -> None:
+    if not _rate_ok(request.client.host if request.client else "unknown"):
+        raise HTTPException(429, "Too many tries. Please wait a minute.")
+
+
+def _verdict(body: PathBody) -> dict:
+    try:
+        return _planner().score(body.answers, body.path)
+    except ValueError as e:                  # PathError and the scorer's "answer at least half" check
+        raise HTTPException(422, str(e))
+
+
+@app.get("/api/adaptive/start")
+def adaptive_start():
+    return {"version": f"adaptive-{N_QUESTIONS}", "n_questions": N_QUESTIONS, "question": _planner().next({}, []),
+            "followup": _followup().available()}
+
+
+@app.post("/api/adaptive/next")
+def adaptive_next(body: PathBody):
+    try:
+        q = _planner().next(body.answers, body.path)
+    except ValueError as e:
+        raise HTTPException(422, str(e))
+    return {"done": q is None, "question": q}
+
+
+@app.post("/api/adaptive/answer")
+def adaptive_answer(body: PathBody, request: Request):
+    """Adaptive 7-question version, scored against the Claude crowd and the Flashpoint panel. Nothing stored."""
+    _guard(request)
+    result = _verdict(body)
+    if not result["extremes"]:
+        feed.add(result["x"], result["y"], result["verdicts"]["claude"]["covered"])
+    return {**result, "followup": _followup().available()}
+
+
+@app.post("/api/adaptive/followup")
+def adaptive_followup(body: PathBody, request: Request):
+    _guard(request)
+    fu = _followup()
+    question = fu.question(_verdict(body))          # None: no key, over today's cap, refused or API error
+    if not question:
+        raise HTTPException(503, "The AI follow-up is not available right now.")
+    return {"question": question, "model": fu.model}
+
+
+@app.post("/api/adaptive/reflect")
+def adaptive_reflect(body: ReflectBody, request: Request):
+    _guard(request)
+    fu = _followup()
+    reflection = fu.reflect(_verdict(body), body.question, body.reply)
+    if not reflection:
+        raise HTTPException(503, "The AI follow-up is not available right now.")
+    return {"reflection": reflection}
 
 
 @app.get("/api/live/recent")

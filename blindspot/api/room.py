@@ -42,16 +42,44 @@ ROOM = {
 CODES = list(ROOM)
 MIN_ANSWERED = 4
 
+# The other 13 live GSS items, in the same short style, for the adaptive version (blindspot/api/adaptive.py).
+# Each button's number is an index into the official GSS options; 7-point frequency scales keep 5 buttons.
+AGREE = [("Strongly agree", 0), ("Agree", 1), ("Neutral", 2), ("Disagree", 3), ("Strongly disagree", 4)]
+FREQ = [("Most days", 0), ("Weekly", 1), ("Monthly", 3), ("A few times a year", 4), ("Never", 6)]
+BANK = {
+    **ROOM,
+    "intcnfrm":  ("Double-check news you read online?", "checking the news",
+                  [("Very often", 0), ("Often", 1), ("Sometimes", 2), ("Rarely", 3), ("Never", 4)]),
+    "finalter":  ("Your money, last few years?", "how your money is going", [("Better", 0), ("Same", 1), ("Worse", 2)]),
+    "finrela":   ("Your family income vs. most Americans?", "your income",
+                  [("Far below", 0), ("Below", 1), ("Average", 2), ("Above", 3), ("Far above", 4)]),
+    "class":     ("Your social class?", "social class", [("Lower", 0), ("Working", 1), ("Middle", 2), ("Upper", 3)]),
+    "happy":     ("How happy are you these days?", "happiness", [("Very", 0), ("Pretty", 1), ("Not too", 2)]),
+    "life":      ("Life feels mostly...", "how life feels", [("Exciting", 0), ("Routine", 1), ("Dull", 2)]),
+    "socfrend":  ("Evenings out with friends?", "time with friends", FREQ),
+    "socrel":    ("Evenings with relatives?", "time with family", FREQ),
+    "workless":  ("Ever cut back work for family?", "work and family", [("Yes", 0), ("No", 1)]),
+    "meovrwrk":  ("Family suffers when men overwork?", "men, work and family", AGREE),
+    "techesy":   ("Tech makes life easier?", "technology", AGREE),
+    "harmgood1": ("Tech does more harm than good?", "technology's harms", AGREE),
+    "natsci":    ("Spending on science research?", "science funding", [("Too little", 0), ("About right", 1), ("Too much", 2)]),
+}
+
 
 def extreme_values(code: str) -> tuple[int, int]:
     """The official option indices behind the first and last button of a question."""
-    choices = ROOM[code][2]
+    choices = BANK[code][2]
     return choices[0][1], choices[-1][1]
 
 
-def all_extremes(answers: dict) -> bool:
+def has_ends(code: str) -> bool:
+    """A yes/no question has no 'extreme' answer; only questions with 3+ buttons do."""
+    return len(BANK[code][2]) >= 3
+
+
+def all_extremes(answers: dict, codes: list[str] | None = None) -> bool:
     """True when every answered question got its first or last button (the easy way to game "Unreachable")."""
-    given = [(c, answers.get(c)) for c in CODES if answers.get(c) is not None]
+    given = [(c, answers.get(c)) for c in (codes or CODES) if answers.get(c) is not None and has_ends(c)]
     return len(given) >= MIN_ANSWERED and all(v in extreme_values(c) for c, v in given)
 
 
@@ -78,15 +106,28 @@ def load_flashpoint(items: list[dict], path: Path = FP_CSV) -> np.ndarray:
     return out
 
 
+_FP_CACHE: dict[Path, np.ndarray] = {}
+
+
+def flashpoint_matrix(items: list[dict], path: Path = FP_CSV) -> np.ndarray:
+    """The Flashpoint panel on all live items, parsed once per process."""
+    if path not in _FP_CACHE:
+        _FP_CACHE[path] = load_flashpoint(items, path)
+    return _FP_CACHE[path]
+
+
 class RoomScorer:
-    def __init__(self, bundle: dict, fp_path: Path = FP_CSV):
+    """Scores a visitor against both AI crowds on a given set of questions (default: the fixed room 7)."""
+
+    def __init__(self, bundle: dict, fp_path: Path = FP_CSV, codes: list[str] | None = None, version: str = "room-7"):
+        self.codes, self.version = list(codes or CODES), version
         by_code = {it["code"]: j for j, it in enumerate(bundle["items"])}
-        cols = [by_code[c] for c in CODES]
+        cols = [by_code[c] for c in self.codes]
         self.items = [bundle["items"][j] for j in cols]
         real = np.array(bundle["real"], float)[:, cols]
         crowds = {
             "claude": (np.array(bundle["crowd"], float)[:, cols], "Claude crowd"),
-            "flashpoint": (load_flashpoint(bundle["items"], fp_path)[:, cols], "Flashpoint panel"),
+            "flashpoint": (flashpoint_matrix(bundle["items"], fp_path)[:, cols], "Flashpoint panel"),
         }
         self.scorers = {name: LiveScorer({**bundle, "items": self.items, "real": real.tolist(), "crowd": M.tolist(),
                                           "crowd_label": label})
@@ -103,7 +144,8 @@ class RoomScorer:
         for row in real:
             buttons = [(it["code"], self.bucket(it["code"], int(round(x * (len(it["options"]) - 1)))))
                        for x, it in zip(row, self.items) if not np.isnan(x)]
-            hits += len(buttons) >= MIN_ANSWERED and all(b in (0, len(ROOM[c][2]) - 1) for c, b in buttons)
+            ends = [(c, b) for c, b in buttons if has_ends(c)]
+            hits += len(ends) >= MIN_ANSWERED and all(b in (0, len(BANK[c][2]) - 1) for c, b in ends)
         return round(hits / len(real), 3)
 
     @staticmethod
@@ -115,18 +157,18 @@ class RoomScorer:
     @staticmethod
     def bucket(code: str, idx: int) -> int:
         """Which button (position in ROOM choices) an official option index falls into: the nearest button."""
-        vals = [v for _, v in ROOM[code][2]]
+        vals = [v for _, v in BANK[code][2]]
         return min(range(len(vals)), key=lambda b: (abs(vals[b] - idx), b))
 
     def _bucket_shares(self, col: np.ndarray, it: dict) -> np.ndarray:
-        k, n = len(it["options"]), len(ROOM[it["code"]][2])
+        k, n = len(it["options"]), len(BANK[it["code"]][2])
         idx = np.rint(col[~np.isnan(col)] * (k - 1)).astype(int)
         counts = np.bincount([self.bucket(it["code"], int(i)) for i in idx], minlength=n).astype(float)
         return counts / max(1.0, counts.sum())
 
     @staticmethod
     def _miss_rate(s: LiveScorer) -> float:
-        """Share of the 334 real people this crowd cannot imagine on these 10 items (each person left out of their own
+        """Share of the 334 real people this crowd cannot imagine on these items (each person left out of their own
         neighbourhood, the same rule the visitor is scored with)."""
         missed = 0
         for r in s.real:
@@ -135,8 +177,8 @@ class RoomScorer:
         return round(float(missed) / len(s.real), 3)
 
     def questions(self) -> list[dict]:
-        return [{"code": it["code"], "question": ROOM[it["code"]][0], "wording": it["wording"],
-                 "choices": [{"label": lab, "value": v} for lab, v in ROOM[it["code"]][2]]} for it in self.items]
+        return [{"code": it["code"], "question": BANK[it["code"]][0], "wording": it["wording"],
+                 "choices": [{"label": lab, "value": v} for lab, v in BANK[it["code"]][2]]} for it in self.items]
 
     def score(self, answers: dict) -> dict:
         verdicts, raw = {}, {}
@@ -152,11 +194,11 @@ class RoomScorer:
         diffs = np.where(np.isnan(v) | np.isnan(twin), -1.0, np.abs(np.nan_to_num(twin) - np.nan_to_num(v)))
         j = int(np.argmax(diffs))
         it, k = self.items[j], len(self.items[j]["options"])
-        code, choices = it["code"], ROOM[it["code"]][2]
+        code, choices = it["code"], BANK[it["code"]][2]
         mine, twin_b = self.bucket(code, int(round(v[j] * (k - 1)))), self.bucket(code, int(round(twin[j] * (k - 1))))
         answered = int((~np.isnan(v)).sum())
-        why = {"question": ROOM[code][0], "topic": ROOM[code][1], "yours": choices[mine][0], "ai": choices[twin_b][0],
+        why = {"question": BANK[code][0], "topic": BANK[code][1], "yours": choices[mine][0], "ai": choices[twin_b][0],
                "real_share": round(float(self.real_share[j][mine]), 3), "differs": mine != twin_b, "answered": answered}
-        return {"version": "room-7", "verdicts": verdicts, "why": why, "x": raw["claude"]["x"], "y": raw["claude"]["y"],
+        return {"version": self.version, "verdicts": verdicts, "why": why, "x": raw["claude"]["x"], "y": raw["claude"]["y"],
                 "real_n": len(self.real), "crowd_n": self.crowd_n,
-                "extremes": all_extremes(answers), "real_extreme_share": self.real_extreme_share}
+                "extremes": all_extremes(answers, self.codes), "real_extreme_share": self.real_extreme_share}
